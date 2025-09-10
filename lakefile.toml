@@ -1,0 +1,10 @@
+name = "adt"
+version = "0.1.0"
+defaultTargets = ["adt"]
+
+[[lean_lib]]
+name = "Adt"
+
+[[lean_exe]]
+name = "adt"
+root = "Main"
