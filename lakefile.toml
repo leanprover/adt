@@ -1,9 +1,9 @@
-name = "adt"
+name = "ADT"
 version = "0.1.0"
 defaultTargets = ["adt"]
 
 [[lean_lib]]
-name = "Adt"
+name = "ADT"
 
 [[lean_exe]]
 name = "adt"
