@@ -142,9 +142,9 @@ class LawfulDMapy (γ : Type u) (α : Type v) (β : α → Type w) [inst : DMapy
   not_mem_empty : ∀ {k : α} {n : Nat}, ¬ k ∈ emptyWithCapacity (self:=inst) n
   mem_iff_isSome_dGetElem? : ∀ {m : γ} {k : α}, k ∈ m ↔ m[k]ᵈ?.isSome
   dGetElem?_insert_self : ∀ {m : γ} {k : α} {v : β k}, (insert m k v)[k]ᵈ? = .some v
-  dGetElem?_insert_ne : ∀ {m : γ} {k a : α} {v : β k}, a ≠ k → (insert m k v)[a]ᵈ? = m[a]ᵈ?
+  dGetElem?_insert_ne : ∀ {m : γ} {k a : α} {v : β k}, k ≠ a → (insert m k v)[a]ᵈ? = m[a]ᵈ?
   dGetElem?_erase_self : ∀ {m : γ} {k : α}, (erase (β:=β) m k)[k]ᵈ? = .none
-  dGetElem?_erase_ne : ∀ {m : γ} {k a : α}, a ≠ k → (erase (β:=β) m k)[a]ᵈ? = m[a]ᵈ?
+  dGetElem?_erase_ne : ∀ {m : γ} {k a : α}, k ≠ a → (erase (β:=β) m k)[a]ᵈ? = m[a]ᵈ?
   size_erase_mem : ∀ {m : γ} {k : α}, k ∈ m → Sizy.size (erase (β:=β) m k) + 1 = Sizy.size m
 
 theorem LawfulDMapy.mem_iff_dGetElem?_eq_some {γ α β} [inst : DMapy γ α β] [LawfulDMapy γ α β] {m : γ} {k : α} : k ∈ m ↔ ∃ v, m[k]ᵈ? = .some v := by
@@ -154,14 +154,14 @@ theorem LawfulDMapy.not_mem_iff_dGetElem?_eq_none {γ α β} [inst : DMapy γ α
   rw [mem_iff_isSome_dGetElem?]; simp
 
 theorem LawfulDMapy.mem_insert {γ α β} [inst : DMapy γ α β] [LawfulDMapy γ α β] {m : γ} {k a : α} {v : β k} :
-  a ∈ insert m k v ↔ (a = k) ∨ a ∈ m := by
-  rw [mem_iff_isSome_dGetElem?]; by_cases a = k
+  a ∈ insert m k v ↔ (k = a) ∨ a ∈ m := by
+  rw [mem_iff_isSome_dGetElem?]; by_cases k = a
   case pos h => cases h; simp [dGetElem?_insert_self]
   case neg h => simp only [dGetElem?_insert_ne h]; simp [← mem_iff_isSome_dGetElem?, *]
 
 theorem LawfulDMapy.mem_erase {γ α β} [inst : DMapy γ α β] [LawfulDMapy γ α β] {m : γ} {k a : α} :
-  a ∈ erase (β:=β) m k ↔ a ≠ k ∧ a ∈ m := by
-  rw [mem_iff_isSome_dGetElem?]; by_cases a = k
+  a ∈ erase (β:=β) m k ↔ k ≠ a ∧ a ∈ m := by
+  rw [mem_iff_isSome_dGetElem?]; by_cases k = a
   case pos h => cases h; simp [dGetElem?_erase_self]
   case neg h => simp only [dGetElem?_erase_ne h]; simp [← mem_iff_isSome_dGetElem?, h]
 
@@ -214,7 +214,7 @@ theorem LawfulDMapy.dGetElem_insert_self {γ α β} [inst : DMapy γ α β] [Law
   rw [dGetElem?_insert_self] at heq
   injection heq with heq; rw [← heq]
 
-theorem LawfulDMapy.dGetElem_insert_ne {γ α β} [inst : DMapy γ α β] [LawfulDMapy γ α β] {m : γ} {k a : α} {v : β k} (h₁ : a ∈ insert m k v) (h₂ : a ≠ k) :
+theorem LawfulDMapy.dGetElem_insert_ne {γ α β} [inst : DMapy γ α β] [LawfulDMapy γ α β] {m : γ} {k a : α} {v : β k} (h₁ : a ∈ insert m k v) (h₂ : k ≠ a) :
   (insert m k v)[a]ᵈ'h₁ = m[a]ᵈ'(Or.resolve_left (mem_insert.mp h₁) h₂) := by
   have heq := dGetElem?_eq_some_dGetElem h₁
   have heq' := dGetElem?_eq_some_dGetElem (Or.resolve_left (mem_insert.mp h₁) h₂)
@@ -225,7 +225,7 @@ theorem LawfulDMapy.dGetElem_erase {γ α β} [inst : DMapy γ α β] [LawfulDMa
   (erase (β:=β) m k)[a]ᵈ'h' = m[a]ᵈ'((mem_erase.mp h').right) := by
   have heq := dGetElem?_eq_some_dGetElem h'
   have heq' := dGetElem?_eq_some_dGetElem (mem_erase.mp h').right
-  by_cases a = k
+  by_cases k = a
   case pos h => cases h; simp [dGetElem?_erase_self] at heq
   case neg h =>
     simp only [dGetElem?_erase_ne h, heq'] at heq
@@ -239,26 +239,26 @@ theorem LawfulDMapy.erase_insert_not_mem_equiv {γ α β} [inst : DMapy γ α β
   {m : γ} {k : α} {v : β k} (hnmem : k ∉ m) : equiv (β:=β) (erase (β:=β) (insert m k v) k) m := by
   simp only [equiv, keyEquiv, mem_erase, mem_insert, dGetElem_erase]
   apply And.intro
-  case left => intro x; by_cases (x = k) <;> simp_all
+  case left => intro x; by_cases (k = x) <;> simp_all
   case right => intro x ⟨hne, h₁⟩ h₂; simp [dGetElem_insert_ne _ hne]
 
 theorem LawfulDMapy.erase_not_mem_equiv {γ α β} [inst : DMapy γ α β] [LawfulDMapy γ α β]
   {m : γ} {k : α} (hnmem : k ∉ m) : equiv (β:=β) (erase (β:=β) m k) m := by
   simp only [equiv, keyEquiv, mem_erase, dGetElem_erase]
   apply And.intro
-  case left => intro x; by_cases (x = k) <;> simp_all
+  case left => intro x; by_cases (k = x) <;> simp_all
   case right => simp
 
 theorem LawfulDMapy.insert_erase_mem_keyEquiv {γ α β} [inst : DMapy γ α β] [LawfulDMapy γ α β]
   {m : γ} {k : α} {v : β k} (hmem : k ∈ m) : keyEquiv (β:=β) (insert (erase (β:=β) m k) k v) m := by
   simp only [keyEquiv, mem_insert, mem_erase]
-  intro x; by_cases (x = k) <;> simp_all
+  intro x; by_cases (k = x) <;> simp_all
 
 theorem LawfulDMapy.insert_erase_dGetElem_eq_equiv {γ α β} [inst : DMapy γ α β] [LawfulDMapy γ α β]
   {m : γ} {k : α} {v : β k} (hmem : k ∈ m) (hget : m[k]ᵈ'hmem = v) : equiv (β:=β) (insert (erase (β:=β) m k) k v) m := by
   simp only [equiv, keyEquiv, mem_insert, mem_erase]
   apply And.intro
-  case left => intro x; by_cases (x = k) <;> simp_all
+  case left => intro x; grind
   case right =>
     intro x h₁ h₂; cases h₁
     case inl heq => cases heq; simp [dGetElem_insert_self, hget]
@@ -285,7 +285,7 @@ theorem LawfulDMapy.exists_key_list {γ α β} [inst : DMapy γ α β] [LawfulDM
     case equiv =>
       simp only [List.mem_cons, ← hequiv, mem_erase]
       intro k; apply Iff.intro
-      case mp => intro hk; by_cases k = x <;> simp [*]
+      case mp => intro hk; grind
       case mpr => intro hk; cases hk <;> simp [*]
 
 noncomputable def LawfulDMapy.exKeyList {γ α β} [inst : DMapy γ α β] [LawfulDMapy γ α β] (m : γ) : List α :=
@@ -386,20 +386,20 @@ theorem LawfulDMapy.dGetElem?_insert {γ α β} [inst : DMapy γ α β]
   (insert m k v)[a]ᵈ? = if h : k = a then h ▸ some v else m[a]ᵈ? := by
   by_cases (a ∈ insert m k v)
   case pos h =>
-    rw [mem_insert] at h; by_cases (a = k)
+    rw [mem_insert] at h; by_cases (k = a)
     case pos heq => cases heq; simp [dGetElem?_insert_self]
-    case neg heq => simp [dGetElem?_insert_ne heq, Ne.symm heq]
+    case neg heq => simp [dGetElem?_insert_ne heq, heq]
   case neg h =>
     rw [not_mem_iff_dGetElem?_eq_none.mp h]
     rw [mem_insert, not_or] at h
-    simp [not_mem_iff_dGetElem?_eq_none.mp h.right, Ne.symm h.left]
+    simp [not_mem_iff_dGetElem?_eq_none.mp h.right, h.left]
 
 theorem LawfulDMapy.dGetElem?_erase {γ α β} [inst : DMapy γ α β]
   [LawfulDMapy γ α β] [DecidableEq α] {m : γ} {k a : α} :
   (erase (β:=β) m k)[a]ᵈ? = if (k = a) then .none else m[a]ᵈ? := by
   by_cases k = a
   case pos h => cases h; simp [dGetElem?_erase_self]
-  case neg h => simp [dGetElem?_erase_ne (Ne.symm h), h]
+  case neg h => simp [dGetElem?_erase_ne h, h]
 
 open Classical in
 theorem LawfulDMapy.dGetElem?_eq_none_iff_dGetElem?_eq_none_of_keyEquiv {γ₁ γ₂ α β}
@@ -519,11 +519,11 @@ instance {α β} [BEq α] [Hashable α] [LawfulBEq α] : LawfulDMapy (DHashMap �
   dGetElem?_insert_self := DHashMap.get?_insert_self
   dGetElem?_insert_ne := by
     intro m k a v h
-    simp [DMapy.insert, dGetElem?, DHashMap.get?_insert, Ne.symm h]
+    simp [DMapy.insert, dGetElem?, DHashMap.get?_insert, h]
   dGetElem?_erase_self := DHashMap.get?_erase_self
   dGetElem?_erase_ne := by
     intro m k a h
-    simp [DMapy.erase, dGetElem?, DHashMap.get?_erase, Ne.symm h]
+    simp [DMapy.erase, dGetElem?, DHashMap.get?_erase, h]
   size_zero_iff_forall_not_mem := by
     intro m; simp only [Sizy.size]
     apply DHashMap.size_zero_iff_forall_not_mem
@@ -544,14 +544,14 @@ instance {α β} [Ord α] [LawfulEqOrd α] [TransOrd α] : LawfulDMapy (DTreeMap
     simp only [DMapy.insert, dGetElem?, DTreeMap.get?_insert]
     rw [dite_cond_eq_false]
     rw [LawfulEqOrd.compare_eq_iff_eq]
-    simp [Ne.symm hne]
+    simp [hne]
   dGetElem?_erase_self := DTreeMap.get?_erase_self
   dGetElem?_erase_ne := by
     intro m k a hne
     simp only [DMapy.erase, dGetElem?, DTreeMap.get?_erase]
     rw [ite_cond_eq_false]
     rw [LawfulEqOrd.compare_eq_iff_eq]
-    simp [Ne.symm hne]
+    simp [hne]
   size_zero_iff_forall_not_mem := by
     intro m
     rw [← DTreeMap.isEmpty_iff_forall_not_mem,
@@ -573,11 +573,11 @@ instance {α β} [BEq α] [Hashable α] [LawfulBEq α] [LawfulHashable α] : Law
   dGetElem?_insert_self := ExtDHashMap.get?_insert_self
   dGetElem?_insert_ne := by
     intros m k a v hne
-    simp [DMapy.insert, dGetElem?, ExtDHashMap.get?_insert, hne.symm]
+    simp [DMapy.insert, dGetElem?, ExtDHashMap.get?_insert, hne]
   dGetElem?_erase_self := ExtDHashMap.get?_erase_self
   dGetElem?_erase_ne := by
     intros m k a hne
-    simp [DMapy.erase, dGetElem?, ExtDHashMap.get?_erase, hne.symm]
+    simp [DMapy.erase, dGetElem?, ExtDHashMap.get?_erase, hne]
   size_zero_iff_forall_not_mem := by
     intro m
     rw [← ExtDHashMap.eq_empty_iff_forall_not_mem,
@@ -600,14 +600,14 @@ instance {α β} [Ord α] [LawfulEqOrd α] [TransOrd α] : LawfulDMapy (ExtDTree
     simp only [DMapy.insert, dGetElem?, ExtDTreeMap.get?_insert]
     rw [dite_cond_eq_false]
     rw [LawfulEqOrd.compare_eq_iff_eq]
-    simp [Ne.symm hne]
+    simp [hne]
   dGetElem?_erase_self := ExtDTreeMap.get?_erase_self
   dGetElem?_erase_ne := by
     intro m k a hne
     simp only [DMapy.erase, dGetElem?, ExtDTreeMap.get?_erase]
     rw [ite_cond_eq_false]
     rw [LawfulEqOrd.compare_eq_iff_eq]
-    simp [Ne.symm hne]
+    simp [hne]
   size_zero_iff_forall_not_mem := by
     intro m
     rw [← ExtDTreeMap.isEmpty_iff_forall_not_mem,
@@ -764,9 +764,9 @@ class LawfulMapy (γ : Type u) (α : Type v) (β : Type w) [inst : Mapy γ α β
   not_mem_empty : ∀ {k : α} {n : Nat}, ¬ k ∈ emptyWithCapacity (self:=inst) n
   mem_iff_isSome_getElem? : ∀ {m : γ} {k : α}, k ∈ m ↔ m[k]?.isSome
   getElem?_insert_self : ∀ {m : γ} {k : α} {v : β}, (insert m k v)[k]? = .some v
-  getElem?_insert_ne : ∀ {m : γ} {k a : α} {v : β}, a ≠ k → (insert m k v)[a]? = m[a]?
+  getElem?_insert_ne : ∀ {m : γ} {k a : α} {v : β}, k ≠ a → (insert m k v)[a]? = m[a]?
   getElem?_erase_self : ∀ {m : γ} {k : α}, (erase (β:=β) m k)[k]? = .none
-  getElem?_erase_ne : ∀ {m : γ} {k a : α}, a ≠ k → (erase (β:=β) m k)[a]? = m[a]?
+  getElem?_erase_ne : ∀ {m : γ} {k a : α}, k ≠ a → (erase (β:=β) m k)[a]? = m[a]?
   size_erase_mem : ∀ {m : γ} {k : α}, k ∈ m → Sizy.size (erase (β:=β) m k) + 1 = Sizy.size m
 
 def LawfulMapy_of_LawfulDMapy {γ α β} [inst : Mapy γ α β]
@@ -820,11 +820,11 @@ theorem LawfulMapy.not_mem_iff_getElem?_eq_none {γ α β} [inst : Mapy γ α β
   LawfulDMapy.not_mem_iff_dGetElem?_eq_none (inst:=DMapy_of_Mapy inst)
 
 theorem LawfulMapy.mem_insert {γ α β} [inst : Mapy γ α β] [LawfulMapy γ α β] {m : γ} {k a : α} {v : β} :
-  a ∈ insert m k v ↔ (a = k) ∨ a ∈ m :=
+  a ∈ insert m k v ↔ (k = a) ∨ a ∈ m :=
   LawfulDMapy.mem_insert (inst:=DMapy_of_Mapy inst)
 
 theorem LawfulMapy.mem_erase {γ α β} [inst : Mapy γ α β] [LawfulMapy γ α β] {m : γ} {k a : α} :
-  a ∈ erase (β:=β) m k ↔ a ≠ k ∧ a ∈ m :=
+  a ∈ erase (β:=β) m k ↔ k ≠ a ∧ a ∈ m :=
   LawfulDMapy.mem_erase (inst:=DMapy_of_Mapy inst)
 
 open Classical in
@@ -866,7 +866,7 @@ theorem LawfulMapy.getElem_insert_self {γ α β} [inst : Mapy γ α β] [Lawful
   (insert m k v)[k]'(mem_insert.mpr (Or.inl rfl)) = v :=
   LawfulDMapy.dGetElem_insert_self (inst:=DMapy_of_Mapy inst)
 
-theorem LawfulMapy.getElem_insert_ne {γ α β} [inst : Mapy γ α β] [LawfulMapy γ α β] {m : γ} {k a : α} {v : β} (h₁ : a ∈ insert m k v) (h₂ : a ≠ k) :
+theorem LawfulMapy.getElem_insert_ne {γ α β} [inst : Mapy γ α β] [LawfulMapy γ α β] {m : γ} {k a : α} {v : β} (h₁ : a ∈ insert m k v) (h₂ : k ≠ a) :
   (insert m k v)[a] = m[a]'(Or.resolve_left (mem_insert.mp h₁) h₂) :=
   LawfulDMapy.dGetElem_insert_ne (inst:=DMapy_of_Mapy inst) h₁ h₂
 
@@ -1066,11 +1066,11 @@ instance {α β} [BEq α] [Hashable α] [LawfulBEq α] : LawfulMapy (HashMap α 
   getElem?_insert_self := HashMap.getElem?_insert_self
   getElem?_insert_ne := by
     intro m k a v h
-    simp [Mapy.insert, HashMap.getElem?_insert, Ne.symm h]
+    simp [Mapy.insert, HashMap.getElem?_insert, h]
   getElem?_erase_self := HashMap.getElem?_erase_self
   getElem?_erase_ne := by
     intro m k a h
-    simp [Mapy.erase, HashMap.getElem?_erase, Ne.symm h]
+    simp [Mapy.erase, HashMap.getElem?_erase, h]
   size_erase_mem := HashMap.size_erase_mem
 
 instance {α} : Mapy (OptArr α) Nat α where
@@ -1103,14 +1103,14 @@ instance {α β} [Ord α] [LawfulEqOrd α] [TransOrd α] : LawfulMapy (TreeMap �
     simp only [Mapy.insert, TreeMap.getElem?_insert]
     rw [ite_cond_eq_false]
     rw [LawfulEqOrd.compare_eq_iff_eq]
-    simp [Ne.symm hne]
+    simp [hne]
   getElem?_erase_self := TreeMap.getElem?_erase_self
   getElem?_erase_ne := by
     intro m k a hne
     simp only [Mapy.erase, TreeMap.getElem?_erase]
     rw [ite_cond_eq_false]
     rw [LawfulEqOrd.compare_eq_iff_eq]
-    simp [Ne.symm hne]
+    simp [hne]
   size_erase_mem := TreeMap.size_erase_mem
 
 instance {α β} [BEq α] [Hashable α] [EquivBEq α] [LawfulHashable α] : Mapy (ExtHashMap α β) α β where
@@ -1125,11 +1125,11 @@ instance {α β} [BEq α] [Hashable α] [LawfulBEq α] [LawfulHashable α] : Law
   getElem?_insert_self := ExtHashMap.getElem?_insert_self
   getElem?_insert_ne := by
     intros m k a v hne
-    simp [Mapy.insert, ExtHashMap.getElem?_insert, hne.symm]
+    simp [Mapy.insert, ExtHashMap.getElem?_insert, hne]
   getElem?_erase_self := ExtHashMap.getElem?_erase_self
   getElem?_erase_ne := by
     intros m k a hne
-    simp [Mapy.erase, ExtHashMap.getElem?_erase, hne.symm]
+    simp [Mapy.erase, ExtHashMap.getElem?_erase, hne]
   size_erase_mem := Std.ExtHashMap.size_erase_mem
 
 instance {α β} [Ord α] [TransOrd α] : Mapy (ExtTreeMap α β) α β where
@@ -1147,14 +1147,14 @@ instance {α β} [Ord α] [LawfulEqOrd α] [TransOrd α] : LawfulMapy (ExtTreeMa
     simp only [Mapy.insert, ExtTreeMap.getElem?_insert]
     rw [ite_cond_eq_false]
     rw [LawfulEqOrd.compare_eq_iff_eq]
-    simp [Ne.symm hne]
+    simp [hne]
   getElem?_erase_self := ExtTreeMap.getElem?_erase_self
   getElem?_erase_ne := by
     intro m k a hne
     simp only [Mapy.erase, ExtTreeMap.getElem?_erase]
     rw [ite_cond_eq_false]
     rw [LawfulEqOrd.compare_eq_iff_eq]
-    simp [Ne.symm hne]
+    simp [hne]
   size_erase_mem := ExtTreeMap.size_erase_mem
 
 end Mapy

@@ -328,7 +328,7 @@ namespace LawfulDMapAPI
       cases heq
       rw [dGetElem?_alter_self, dGetElem?_erase_self, hnone]
     case neg hne =>
-      rw [dGetElem?_alter_ne hne, dGetElem?_erase_ne (Ne.symm hne)]
+      rw [dGetElem?_alter_ne hne, dGetElem?_erase_ne hne]
 
   theorem alter_some {γ α β} [inst : DMapAPI γ α β] [LawfulDMapAPI γ α β]
     {m : γ} {k : α} {v : β k} {f : Option (β k) → Option (β k)}
@@ -339,7 +339,7 @@ namespace LawfulDMapAPI
       cases heq
       rw [dGetElem?_alter_self, dGetElem?_insert_self, hsome]
     case neg hne =>
-      rw [dGetElem?_alter_ne hne, dGetElem?_insert_ne (Ne.symm hne)]
+      rw [dGetElem?_alter_ne hne, dGetElem?_insert_ne hne]
 
   theorem mem_alter_self {γ α β} [inst : DMapAPI γ α β] [LawfulDMapAPI γ α β]
     {m : γ} {k : α} {f : Option (β k) → Option (β k)} :

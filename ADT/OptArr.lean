@@ -81,15 +81,15 @@ theorem OptArr.getElem?_insert_self {α} {xs : OptArr α} {k : Nat} {v : α} :
     simp only [Array.getElem?_push, Array.getElem?_append]
     simp [Array.size_append, Array.size_replicate, hsz]
 
-theorem OptArr.getElem?_insert_ne {α} {xs : OptArr α} {k a : Nat} {v : α} (h : a ≠ k) :
+theorem OptArr.getElem?_insert_ne {α} {xs : OptArr α} {k a : Nat} {v : α} (h : k ≠ a) :
   (xs.insert k v)[a]? = xs[a]? := by
   simp only [insert, getElem?]; simp only [get?]; split
   case isTrue hlt =>
-    simp [Array.getElem?_modify, Ne.symm h]
+    simp [Array.getElem?_modify, h]
   case isFalse hge =>
     have hsz : Array.size xs + (k - Array.size xs) = k := by omega
     simp only [Array.getElem?_push, Array.getElem?_append]
-    simp only [Array.size_append, Array.size_replicate, hsz, h, ite_false]
+    simp only [Array.size_append, Array.size_replicate, hsz, h.symm, ite_false]
     split
     case isTrue hlt => rfl
     case isFalse hge =>
@@ -104,10 +104,10 @@ theorem OptArr.getElem?_erase_self {α} {xs : OptArr α} {k : Nat} :
   simp only [get?, Array.getElem?_modify, ite_true]
   cases (getElem? (coll:=Array _) xs k) <;> rfl
 
-theorem OptArr.getElem?_erase_ne {α} {xs : OptArr α} {k a : Nat} (hne : a ≠ k) :
+theorem OptArr.getElem?_erase_ne {α} {xs : OptArr α} {k a : Nat} (hne : k ≠ a) :
   (xs.erase k)[a]? = xs[a]? := by
   simp only [erase, getElem?]
-  simp [get?, Array.getElem?_modify, Ne.symm hne]
+  simp [get?, Array.getElem?_modify, hne]
 
 theorem OptArr.isEmpty_iff_size_eq_zero {α} {m : OptArr α} : m.isEmpty ↔ m.size = 0 := by
   simp [OptArr.isEmpty]
