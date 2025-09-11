@@ -7,22 +7,22 @@ Authors: Yicheng Qian
 import Lean
 import ADT.IsomMap
 import ADT.Array
-import ADT.Mapy
+import ADT.MapLike
 import ADT.Tactics.StructFieldEqs
 
 open Lean
 
-structure IndexMap (γ : Type v) (α : Type u) [Mapy γ α Nat] where
+structure IndexMap (γ : Type v) (α : Type u) [MapLike γ α Nat] where
   map : γ
   ind : Array α
   off : Nat
 
 namespace IndexMap
 
-variable {γ : Type v} {α : Type u} [inst : Mapy γ α Nat]
+variable {γ : Type v} {α : Type u} [inst : MapLike γ α Nat]
 
 def emptyWithCapacity (off : Nat := 0) (capacity : Nat := 8) : IndexMap γ α :=
-  { map := Mapy.emptyWithCapacity (self:=inst) capacity, ind := #[], off }
+  { map := MapLike.emptyWithCapacity (self:=inst) capacity, ind := #[], off }
 
 def getIdx? (m : IndexMap γ α) (x : α) : Option Nat :=
   m.map[x]?
@@ -45,7 +45,7 @@ instance : IsomMap α Nat (IndexMap γ α) where
   find₂ := getVal?
 
 def insert (m : IndexMap γ α) (x : α) : IndexMap γ α :=
-  { map := Mapy.insert m.map x (m.off + m.size), ind := m.ind.push x, off := m.off }
+  { map := MapLike.insert m.map x (m.off + m.size), ind := m.ind.push x, off := m.off }
 
 def getIdxThenInsertIfNew? (m : IndexMap γ α) (a : α) : Option Nat × IndexMap γ α :=
   match m.getIdx? a with
@@ -74,8 +74,8 @@ def WF (m : IndexMap γ α) := WFIsomMap α Nat _ m
 
 /-
 theorem size_eq_of_WF
-  {α : Type u} [inst : Mapy γ α Nat] {m : IndexMap γ α} {x : α}
-  (hwf : m.WF) : m.size = Sizy.size m.map := by
+  {α : Type u} [inst : MapLike γ α Nat] {m : IndexMap γ α} {x : α}
+  (hwf : m.WF) : m.size = Size.size m.map := by
   simp only [IndexMap.size]
 -/
 
@@ -114,22 +114,22 @@ theorem mem_def {m : IndexMap γ α} {x : α} :
 theorem getVal?_def {m : IndexMap γ α} {i : Nat} :
   m.getVal? i = if i >= m.off then m.ind[i - m.off]? else .none := rfl
 
-theorem mem_iff_getIdx?_eq_some [LawfulMapy γ α Nat]
+theorem mem_iff_getIdx?_eq_some [LawfulMapLike γ α Nat]
   {m : IndexMap γ α} {x : α} : x ∈ m ↔ ∃ i, m.getIdx? x = .some i := by
-  rw [mem_def, LawfulMapy.mem_iff_isSome_getElem?]
+  rw [mem_def, LawfulMapLike.mem_iff_isSome_getElem?]
   exact Option.isSome_iff_exists
 
-theorem mem_iff_getIdx?_isSome [LawfulMapy γ α Nat]
+theorem mem_iff_getIdx?_isSome [LawfulMapLike γ α Nat]
   {m : IndexMap γ α} {x : α} : x ∈ m ↔ (m.getIdx? x).isSome :=
   iff_iff_eq.mp Option.isSome_iff_exists ▸ mem_iff_getIdx?_eq_some
 
-theorem mem_iff_getVal?_eq_some [LawfulMapy γ α Nat]
+theorem mem_iff_getVal?_eq_some [LawfulMapLike γ α Nat]
   {m : IndexMap γ α} {x : α} (hwf : WF m) : x ∈ m ↔ ∃ i, m.getVal? i = .some x := by
   rw [mem_iff_getIdx?_eq_some]; apply Iff.intro <;> intro ⟨i, hi⟩ <;> exists i
   case mp => apply hwf.find₁_find₂ _ _ hi
   case mpr => apply hwf.find₂_find₁ _ _ hi
 
-theorem mem_iff_mem_ind [LawfulMapy γ α Nat]
+theorem mem_iff_mem_ind [LawfulMapLike γ α Nat]
   {m : IndexMap γ α} {x : α} (hwf : WF m) : x ∈ m ↔ x ∈ m.ind := by
   rw [Array.mem_iff_getElem?, mem_iff_getVal?_eq_some hwf]
   apply Iff.intro
@@ -142,21 +142,21 @@ theorem mem_iff_mem_ind [LawfulMapy γ α Nat]
     intro ⟨i, heq⟩; exists i + m.off
     simp [getVal?_def, heq]
 
-theorem not_mem_iff_getIdx?_eq_none [LawfulMapy γ α Nat]
+theorem not_mem_iff_getIdx?_eq_none [LawfulMapLike γ α Nat]
   {m : IndexMap γ α} {x : α} : x ∉ m ↔ m.getIdx? x = .none := by
   simp [Option.eq_none_iff_forall_ne_some, mem_iff_getIdx?_eq_some]
 
-theorem not_mem_iff_getIdx?_isNone [LawfulMapy γ α Nat]
+theorem not_mem_iff_getIdx?_isNone [LawfulMapLike γ α Nat]
   {m : IndexMap γ α} {x : α} : x ∉ m ↔ (m.getIdx? x).isNone :=
   iff_iff_eq.mp Option.isNone_iff_eq_none ▸ not_mem_iff_getIdx?_eq_none
 
-theorem insert_eq_if_mem [LawfulMapy γ α Nat] {m : IndexMap γ α} {x : α} [Decidable (x ∈ m)] :
+theorem insert_eq_if_mem [LawfulMapLike γ α Nat] {m : IndexMap γ α} {x : α} [Decidable (x ∈ m)] :
   m.insertIfNew x = if (x ∈ m) then m else m.insert x := by
   simp only [insertIfNew]; split
   case h_1 heq => simp [mem_iff_getIdx?_eq_some.mpr ⟨_, heq⟩]
   case h_2 heq => simp [not_mem_iff_getIdx?_eq_none.mpr heq]
 
-theorem size_insertIfNew [LawfulMapy γ α Nat]
+theorem size_insertIfNew [LawfulMapLike γ α Nat]
   {m : IndexMap γ α} {x : α} [Decidable (x ∈ m)] :
   (m.insertIfNew x).size = if (x ∈ m) then m.size else m.size + 1 := by
   simp only [insertIfNew]
@@ -165,36 +165,36 @@ theorem size_insertIfNew [LawfulMapy γ α Nat]
   case some i => simp [mem_iff_getIdx?_eq_some.mpr ⟨_, heq⟩]
 
 open Classical in
-theorem size_insertIfNew_of_mem [LawfulMapy γ α Nat] {m : IndexMap γ α} {x : α}
+theorem size_insertIfNew_of_mem [LawfulMapLike γ α Nat] {m : IndexMap γ α} {x : α}
   (hmem : x ∈ m) : (m.insertIfNew x).size = m.size := by
   simp [size_insertIfNew, hmem]
 
 open Classical in
-theorem size_insertIfNew_of_not_mem [LawfulMapy γ α Nat]
+theorem size_insertIfNew_of_not_mem [LawfulMapLike γ α Nat]
   {m : IndexMap γ α} {x : α} (hmem : x ∉ m) : (m.insertIfNew x).size = m.size + 1 := by
   simp [size_insertIfNew, hmem]
 
 @[simp]
-theorem not_mem_empty [LawfulMapy γ α Nat] {off capacity : Nat} {x : α} :
+theorem not_mem_empty [LawfulMapLike γ α Nat] {off capacity : Nat} {x : α} :
   ¬ x ∈ emptyWithCapacity (inst:=inst) off capacity := by
-  apply LawfulMapy.not_mem_empty
+  apply LawfulMapLike.not_mem_empty
 
 @[simp]
-theorem mem_insert [LawfulMapy γ α Nat]
+theorem mem_insert [LawfulMapLike γ α Nat]
   {m : IndexMap γ α} {x y : α} : y ∈ m.insert x ↔ x = y ∨ y ∈ m := by
-  simp only [insert, mem_def, LawfulMapy.mem_insert]
+  simp only [insert, mem_def, LawfulMapLike.mem_insert]
 
-theorem getIdx?_eq_some_getIdx [LawfulMapy γ α Nat] {m : IndexMap γ α} {x : α} (h : x ∈ m) :
-  m.getIdx? x = .some (m.getIdx x h) := LawfulMapy.getElem?_eq_some_getElem h
+theorem getIdx?_eq_some_getIdx [LawfulMapLike γ α Nat] {m : IndexMap γ α} {x : α} (h : x ∈ m) :
+  m.getIdx? x = .some (m.getIdx x h) := LawfulMapLike.getElem?_eq_some_getElem h
 
 /-- Recommended choice for both `apply` and `have` -/
-theorem getIdx_eq_of_getIdx?_eq_some [LawfulMapy γ α Nat]
+theorem getIdx_eq_of_getIdx?_eq_some [LawfulMapLike γ α Nat]
   {m : IndexMap γ α} {x : α} {i : Nat} (h : m.getIdx? x = .some i) :
   m.getIdx x (mem_iff_getIdx?_eq_some.mpr ⟨_, h⟩) = i := by
   rw [getIdx?_eq_some_getIdx] at h; injection h
 
 /-- Recommended choice for `apply` -/
-theorem getIdx_eq_of_getIdx?_eq_some' [LawfulMapy γ α Nat]
+theorem getIdx_eq_of_getIdx?_eq_some' [LawfulMapLike γ α Nat]
   {m : IndexMap γ α} {x : α} {i : Nat} {hmem : x ∈ m} (h : m.getIdx? x = .some i) :
   m.getIdx x hmem = i := by
   rw [getIdx?_eq_some_getIdx] at h; injection h
@@ -215,14 +215,14 @@ theorem getIdx?_lt_of_WF {m : IndexMap γ α} {x : α} {i : Nat} (hwf : WF m)
     rw [size]; omega
   case isFalse => cases heq'
 
-theorem getIdx_ge_of_WF [LawfulMapy γ α Nat] {m : IndexMap γ α} {x : α}
+theorem getIdx_ge_of_WF [LawfulMapLike γ α Nat] {m : IndexMap γ α} {x : α}
   (hwf : WF m) (hmem : x ∈ m) : m.getIdx x hmem ≥ m.off := by
-  have heq := LawfulMapy.getElem?_eq_some_getElem hmem
+  have heq := LawfulMapLike.getElem?_eq_some_getElem hmem
   exact getIdx?_ge_of_WF hwf heq
 
-theorem getIdx_lt_of_WF [LawfulMapy γ α Nat] {m : IndexMap γ α} {x : α}
+theorem getIdx_lt_of_WF [LawfulMapLike γ α Nat] {m : IndexMap γ α} {x : α}
   (hwf : WF m) (hmem : x ∈ m) : m.getIdx x hmem < m.off + m.size := by
-  have heq := LawfulMapy.getElem?_eq_some_getElem hmem
+  have heq := LawfulMapLike.getElem?_eq_some_getElem hmem
   exact getIdx?_lt_of_WF hwf heq
 
 theorem insertIfNewThenGetIdx_ge_of_WF {m : IndexMap γ α} {x : α} (hwf : WF m) :
@@ -237,13 +237,13 @@ theorem insertIfNewThenGetIdx_lt_of_WF {m : IndexMap γ α} {x : α} (hwf : WF m
   case h_1 i heq => exact getIdx?_lt_of_WF hwf heq
   case h_2 => simp
 
-theorem empty_WF {off capacity} [LawfulMapy γ α Nat] :
+theorem empty_WF {off capacity} [LawfulMapLike γ α Nat] :
   (IndexMap.emptyWithCapacity (α:=α) (γ:=γ) off capacity).WF := by
   constructor <;> intro a b <;>
-    simp [IsomMap.find₁, IsomMap.find₂, getIdx?, getVal?_def, emptyWithCapacity, LawfulMapy.getElem?_empty]
+    simp [IsomMap.find₁, IsomMap.find₂, getIdx?, getVal?_def, emptyWithCapacity, LawfulMapLike.getElem?_empty]
 
 open Classical in
-theorem insert_WF [LawfulMapy γ α Nat] {m : IndexMap γ α} {x : α}
+theorem insert_WF [LawfulMapLike γ α Nat] {m : IndexMap γ α} {x : α}
   (hwf : m.WF) (notin : x ∉ m) : (m.insert x).WF := by
   cases m
   case mk map ind off =>
@@ -251,7 +251,7 @@ theorem insert_WF [LawfulMapy γ α Nat] {m : IndexMap γ α} {x : α}
     simp only [insert, size]
     constructor <;> intro a b <;>
       simp only [IsomMap.find₁, IsomMap.find₂, getVal?_def,
-                 getIdx?, LawfulMapy.getElem?_insert]
+                 getIdx?, LawfulMapLike.getElem?_insert]
     case find₁_find₂ =>
       split
       case isTrue h =>
@@ -279,7 +279,7 @@ theorem insert_WF [LawfulMapy γ α Nat] {m : IndexMap γ α} {x : α}
             have hind' : Array.getShl? ind b off = .some x := by
               simp [Array.getShl?, hb, hind]
             have hin : map[x]? = b := hwf.find₂_find₁ _ _ hind'
-            have isin : x ∈ map := LawfulMapy.mem_iff_isSome_getElem?.mpr (by rw [hin]; rfl)
+            have isin : x ∈ map := LawfulMapLike.mem_iff_isSome_getElem?.mpr (by rw [hin]; rfl)
             contradiction
         case isFalse h =>
           split
@@ -295,7 +295,7 @@ theorem getIdxThenInsertIfNew?_fst_eq_getIdx? {m : IndexMap γ α} {x : α} :
   simp only [getIdxThenInsertIfNew?, getIdx?]
   cases m.map[x]? <;> rfl
 
-theorem mem_getIdxThenInsertIfNew?_snd [LawfulMapy γ α Nat] {m : IndexMap γ α} {x y : α} :
+theorem mem_getIdxThenInsertIfNew?_snd [LawfulMapLike γ α Nat] {m : IndexMap γ α} {x y : α} :
   y ∈ (m.getIdxThenInsertIfNew? x).snd ↔ x = y ∨ y ∈ m := by
   simp only [getIdxThenInsertIfNew?]
   cases hmx : m.getIdx? x
@@ -304,7 +304,7 @@ theorem mem_getIdxThenInsertIfNew?_snd [LawfulMapy γ α Nat] {m : IndexMap γ �
     have hxm := mem_iff_getIdx?_eq_some.mpr ⟨_, hmx⟩
     grind
 
-theorem getIdxThenInsertIfNew?_snd_WF [LawfulMapy γ α Nat] {m : IndexMap γ α} {x : α}
+theorem getIdxThenInsertIfNew?_snd_WF [LawfulMapLike γ α Nat] {m : IndexMap γ α} {x : α}
   (hwf : m.WF) : (m.getIdxThenInsertIfNew? x).snd.WF := by
   rw [getIdxThenInsertIfNew?]
   cases hmx : m.getIdx? x
@@ -319,7 +319,7 @@ theorem insertIfNewThenGetIdx_fst_eq_getIdx?_getD {m : IndexMap γ α} {x : α} 
   simp only [insertIfNewThenGetIdx, getIdx?]
   cases m.map[x]? <;> rfl
 
-theorem insertIfNewThenGetIdx_snd_WF [LawfulMapy γ α Nat] {m : IndexMap γ α} {x : α}
+theorem insertIfNewThenGetIdx_snd_WF [LawfulMapLike γ α Nat] {m : IndexMap γ α} {x : α}
   (hwf : m.WF) : (m.insertIfNewThenGetIdx x).snd.WF := by
   rw [insertIfNewThenGetIdx]
   cases hmx : m.getIdx? x
@@ -334,7 +334,7 @@ theorem insertIfNewThenGetIdx_snd_eq_getIdxThenInsertIfNew?_snd {m : IndexMap γ
   simp only [insertIfNewThenGetIdx, getIdxThenInsertIfNew?]
   cases m.getIdx? x <;> rfl
 
-theorem mem_insertIfNewThenGetIdx_snd [LawfulMapy γ α Nat] {m : IndexMap γ α} {x y : α} :
+theorem mem_insertIfNewThenGetIdx_snd [LawfulMapLike γ α Nat] {m : IndexMap γ α} {x y : α} :
   y ∈ (m.insertIfNewThenGetIdx x).snd ↔ x = y ∨ y ∈ m := by
   rw [insertIfNewThenGetIdx_snd_eq_getIdxThenInsertIfNew?_snd]
   apply mem_getIdxThenInsertIfNew?_snd
@@ -355,7 +355,7 @@ theorem insertIfNew_eq_of_getIdx?_eq_some {m : IndexMap γ α} {x : α}
   (i : Nat) (hm : m.getIdx? x = .some i) : m.insertIfNew x = m := by
   simp only [insertIfNew, hm]
 
-theorem insertIfNew_eq_of_mem [LawfulMapy γ α Nat] {m : IndexMap γ α}
+theorem insertIfNew_eq_of_mem [LawfulMapLike γ α Nat] {m : IndexMap γ α}
   {x : α} (hm : x ∈ m) : m.insertIfNew x = m := by
   have ⟨i, hi⟩ := mem_iff_getIdx?_eq_some.mp hm
   simp only [insertIfNew, hi]
@@ -364,17 +364,17 @@ theorem insertIfNew_eq_insert_of_getIdx?_eq_none {m : IndexMap γ α} {x : α}
   (hnm : m.getIdx? x = .none) : m.insertIfNew x = m.insert x := by
   simp only [insertIfNew, hnm]
 
-theorem insertIfNew_eq_insert_of_not_mem [LawfulMapy γ α Nat]
+theorem insertIfNew_eq_insert_of_not_mem [LawfulMapLike γ α Nat]
   {m : IndexMap γ α} {x : α} (hnm : x ∉ m) : m.insertIfNew x = m.insert x := by
   have hn := not_mem_iff_getIdx?_eq_none.mp hnm
   simp only [insertIfNew, hn]
 
-theorem mem_insertIfNew [LawfulMapy γ α Nat]
+theorem mem_insertIfNew [LawfulMapLike γ α Nat]
   {m : IndexMap γ α} {x y : α} : y ∈ m.insertIfNew x ↔ x = y ∨ y ∈ m := by
   rw [← insertIfNewThenGetIdx_snd_eq_insertIfNew]
   apply mem_insertIfNewThenGetIdx_snd
 
-theorem insertIfNew_WF [LawfulMapy γ α Nat] {m : IndexMap γ α} {x : α}
+theorem insertIfNew_WF [LawfulMapLike γ α Nat] {m : IndexMap γ α} {x : α}
   (hwf : m.WF) : (m.insertIfNew x).WF := by
   rw [← insertIfNewThenGetIdx_snd_eq_insertIfNew]
   apply insertIfNewThenGetIdx_snd_WF (hwf:=hwf)
@@ -398,7 +398,7 @@ theorem insertIfNewMany_append {m : IndexMap γ α} {xs ys : Array α} :
   simp [insertIfNewMany]
 
 @[simp]
-theorem mem_insertIfNewMany [LawfulMapy γ α Nat] {m : IndexMap γ α} {xs : Array α} {y : α} :
+theorem mem_insertIfNewMany [LawfulMapLike γ α Nat] {m : IndexMap γ α} {xs : Array α} {y : α} :
   y ∈ IndexMap.insertIfNewMany m xs ↔ y ∈ m ∨ y ∈ xs := by
   rw [IndexMap.insertIfNewMany]
   revert m y; induction xs using Array.push_ind
@@ -406,7 +406,7 @@ theorem mem_insertIfNewMany [LawfulMapy γ α Nat] {m : IndexMap γ α} {xs : Ar
   case ind IH =>
     grind [Array.foldl_push, mem_insertIfNew]
 
-theorem insertIfNewMany_WF [LawfulMapy γ α Nat] {m : IndexMap γ α} {xs : Array α}
+theorem insertIfNewMany_WF [LawfulMapLike γ α Nat] {m : IndexMap γ α} {xs : Array α}
   (hwf : m.WF) : (m.insertIfNewMany xs).WF := by
   revert m hwf; induction xs using Array.push_ind
   case base => simp [insertIfNewMany]
@@ -454,31 +454,31 @@ theorem getVal?_insert_eq_none_of_gt {m : IndexMap γ α} {x : α} {i : Nat}
   simp [Nat.le_of_lt hgt]
 
 open Classical in
-theorem getIdx?_insert_eq [LawfulMapy γ α Nat] {m : IndexMap γ α} {x : α} :
+theorem getIdx?_insert_eq [LawfulMapLike γ α Nat] {m : IndexMap γ α} {x : α} :
   (m.insert x).getIdx? x = .some (m.off + m.size) := by
-  simp [getIdx?, insert, LawfulMapy.getElem?_insert_self]
+  simp [getIdx?, insert, LawfulMapLike.getElem?_insert_self]
 
 open Classical in
-theorem getIdx?_insert_ne [LawfulMapy γ α Nat] {m : IndexMap γ α} {x y : α} (hne : x ≠ y) :
+theorem getIdx?_insert_ne [LawfulMapLike γ α Nat] {m : IndexMap γ α} {x y : α} (hne : x ≠ y) :
   (m.insert x).getIdx? y = m.getIdx? y := by
-  simp [getIdx?, insert, LawfulMapy.getElem?_insert_ne hne]
+  simp [getIdx?, insert, LawfulMapLike.getElem?_insert_ne hne]
 
-theorem getIdx_insert_eq [LawfulMapy γ α Nat] {m : IndexMap γ α} {x : α} :
+theorem getIdx_insert_eq [LawfulMapLike γ α Nat] {m : IndexMap γ α} {x : α} :
   (m.insert x).getIdx x (mem_insert.mpr (.inl rfl)) = m.off + m.size := by
   have h := getIdx?_insert_eq (m:=m) (x:=x)
   apply getIdx_eq_of_getIdx?_eq_some h
 
-theorem getIdx_insert_ne₁ [LawfulMapy γ α Nat] {m : IndexMap γ α} {x y : α} (hne : x ≠ y) (hmem : y ∈ m) :
+theorem getIdx_insert_ne₁ [LawfulMapLike γ α Nat] {m : IndexMap γ α} {x y : α} (hne : x ≠ y) (hmem : y ∈ m) :
   (m.insert x).getIdx y (mem_insert.mpr (.inr hmem)) = m.getIdx y hmem := by
   have h := getIdx?_insert_ne (m:=m) hne
   rw [getIdx?_eq_some_getIdx hmem] at h
   apply getIdx_eq_of_getIdx?_eq_some h
 
-theorem getIdx_insert_ne₂ [LawfulMapy γ α Nat] {m : IndexMap γ α} {x y : α} (hne : x ≠ y) (hmem : y ∈ m.insert x) :
+theorem getIdx_insert_ne₂ [LawfulMapLike γ α Nat] {m : IndexMap γ α} {x y : α} (hne : x ≠ y) (hmem : y ∈ m.insert x) :
   (m.insert x).getIdx y hmem = m.getIdx y (Or.resolve_left (mem_insert.mp hmem) hne) := by
   apply getIdx_insert_ne₁ hne
 
-theorem getIdx_insertIfNew_eq_of_mem [LawfulMapy γ α Nat] {m : IndexMap γ α} {x y : α} (hmem : y ∈ m) :
+theorem getIdx_insertIfNew_eq_of_mem [LawfulMapLike γ α Nat] {m : IndexMap γ α} {x y : α} (hmem : y ∈ m) :
   (m.insertIfNew x).getIdx y (mem_insertIfNew.mpr (Or.inr hmem)) = m.getIdx y hmem := by
   apply Option.some.inj
   simp only [← getIdx?_eq_some_getIdx]
@@ -486,14 +486,14 @@ theorem getIdx_insertIfNew_eq_of_mem [LawfulMapy γ α Nat] {m : IndexMap γ α}
   case h_1 heq => rfl
   case h_2 heq => grind [not_mem_iff_getIdx?_eq_none, getIdx?_insert_ne]
 
-theorem getIdx_insertIfNew_self_of_not_mem [LawfulMapy γ α Nat] {m : IndexMap γ α} {x : α} (hnm : x ∉ m) :
+theorem getIdx_insertIfNew_self_of_not_mem [LawfulMapLike γ α Nat] {m : IndexMap γ α} {x : α} (hnm : x ∉ m) :
   (m.insertIfNew x).getIdx x (mem_insertIfNew.mpr (Or.inl rfl)) = m.off + m.size := by
   apply Option.some.inj
   simp only [← getIdx?_eq_some_getIdx]
   rw [insertIfNew_eq_insert_of_not_mem hnm]
   rw [getIdx?_insert_eq]
 
-theorem getVal?_getIdx [LawfulMapy γ α Nat] {m : IndexMap γ α} {x : α} (hwf : m.WF) (h : x ∈ m) :
+theorem getVal?_getIdx [LawfulMapLike γ α Nat] {m : IndexMap γ α} {x : α} (hwf : m.WF) (h : x ∈ m) :
   m.getVal? (m.getIdx x h) = .some x := by
   have ⟨i, hi⟩ := mem_iff_getIdx?_eq_some.mp h
   rw [getIdx_eq_of_getIdx?_eq_some hi]

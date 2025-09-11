@@ -6,7 +6,7 @@ Authors: Yicheng Qian
 
 import Lean
 import Std.Data
-import ADT.Sizy
+import ADT.Size
 open Std
 
 class IsEmpty (γ : Type u) where
@@ -93,95 +93,95 @@ instance {α} [BEq α] [Hashable α] : Contains (HashSet α) α where
 instance {α} [Ord α] : Contains (TreeSet α) α where
   contains := TreeSet.contains
 
-class LawfulIsEmptySizy (γ) [IsEmpty γ] [Sizy γ] where
-  isEmpty_iff_size_eq_zero {m : γ} : IsEmpty.isEmpty m ↔ Sizy.size m = 0
+class LawfulIsEmptySize (γ) [IsEmpty γ] [Size γ] where
+  isEmpty_iff_size_eq_zero {m : γ} : IsEmpty.isEmpty m ↔ Size.size m = 0
 
-theorem LawfulIsEmptySizy.isEmpty_eq_size_beq_zero {γ} [IsEmpty γ] [Sizy γ] [LawfulIsEmptySizy γ]
-  {m : γ} : IsEmpty.isEmpty m = (Sizy.size m == 0) := by
+theorem LawfulIsEmptySize.isEmpty_eq_size_beq_zero {γ} [IsEmpty γ] [Size γ] [LawfulIsEmptySize γ]
+  {m : γ} : IsEmpty.isEmpty m = (Size.size m == 0) := by
   rw [Bool.eq_iff_iff, isEmpty_iff_size_eq_zero]; simp
 
-theorem LawfulIsEmptySizy.isEmpty_eq_false_iff_size_ne_zero {γ} [IsEmpty γ] [Sizy γ] [LawfulIsEmptySizy γ]
-  {m : γ} : IsEmpty.isEmpty m = false ↔ Sizy.size m ≠ 0 := by
+theorem LawfulIsEmptySize.isEmpty_eq_false_iff_size_ne_zero {γ} [IsEmpty γ] [Size γ] [LawfulIsEmptySize γ]
+  {m : γ} : IsEmpty.isEmpty m = false ↔ Size.size m ≠ 0 := by
   rw [Ne, ← isEmpty_iff_size_eq_zero]; simp
 
-theorem LawfulIsEmptySizy.isEmpty_eq_false_iff_size_gt_zero {γ} [IsEmpty γ] [Sizy γ] [LawfulIsEmptySizy γ]
-  {m : γ} : IsEmpty.isEmpty m = false ↔ Sizy.size m > 0 := by
+theorem LawfulIsEmptySize.isEmpty_eq_false_iff_size_gt_zero {γ} [IsEmpty γ] [Size γ] [LawfulIsEmptySize γ]
+  {m : γ} : IsEmpty.isEmpty m = false ↔ Size.size m > 0 := by
   rw [isEmpty_eq_false_iff_size_ne_zero]; apply Nat.ne_zero_iff_zero_lt
 
-instance {α} : LawfulIsEmptySizy (List α) where
+instance {α} : LawfulIsEmptySize (List α) where
   isEmpty_iff_size_eq_zero := by
     intro m
-    simp only [IsEmpty.isEmpty, Sizy.size, List.isEmpty_iff_length_eq_zero]
+    simp only [IsEmpty.isEmpty, Size.size, List.isEmpty_iff_length_eq_zero]
 
-instance {α} : LawfulIsEmptySizy (Array α) where
+instance {α} : LawfulIsEmptySize (Array α) where
   isEmpty_iff_size_eq_zero := by
     intro m
-    simp only [IsEmpty.isEmpty, Sizy.size, Array.isEmpty_iff_size_eq_zero]
+    simp only [IsEmpty.isEmpty, Size.size, Array.isEmpty_iff_size_eq_zero]
 
-instance {α β} [BEq α] [Hashable α] [EquivBEq α] [LawfulHashable α] : LawfulIsEmptySizy (DHashMap α β) where
+instance {α β} [BEq α] [Hashable α] [EquivBEq α] [LawfulHashable α] : LawfulIsEmptySize (DHashMap α β) where
   isEmpty_iff_size_eq_zero := by
     intro m
     simp only [IsEmpty.isEmpty, DHashMap.isEmpty_iff_forall_not_mem,
-               LawfulMemSizy.size_zero_iff_forall_not_mem]
+               LawfulMemSize.size_zero_iff_forall_not_mem]
 
-instance {α β} [Ord α] [TransOrd α] : LawfulIsEmptySizy (DTreeMap α β) where
+instance {α β} [Ord α] [TransOrd α] : LawfulIsEmptySize (DTreeMap α β) where
   isEmpty_iff_size_eq_zero := by
     intro m
     simp only [IsEmpty.isEmpty, DTreeMap.isEmpty_iff_forall_not_mem,
-               LawfulMemSizy.size_zero_iff_forall_not_mem]
+               LawfulMemSize.size_zero_iff_forall_not_mem]
 
-instance {α β} [BEq α] [Hashable α] [EquivBEq α] [LawfulHashable α] : LawfulIsEmptySizy (ExtDHashMap α β) where
+instance {α β} [BEq α] [Hashable α] [EquivBEq α] [LawfulHashable α] : LawfulIsEmptySize (ExtDHashMap α β) where
   isEmpty_iff_size_eq_zero := by
     intro m
     simp only [IsEmpty.isEmpty, ExtDHashMap.isEmpty_iff]
     rw [ExtDHashMap.eq_empty_iff_forall_not_mem,
-        LawfulMemSizy.size_zero_iff_forall_not_mem (α:=α)]
+        LawfulMemSize.size_zero_iff_forall_not_mem (α:=α)]
 
-instance {α β} [Ord α] [TransOrd α] : LawfulIsEmptySizy (ExtDTreeMap α β) where
+instance {α β} [Ord α] [TransOrd α] : LawfulIsEmptySize (ExtDTreeMap α β) where
   isEmpty_iff_size_eq_zero := by
     intro m
     simp only [IsEmpty.isEmpty, ExtDTreeMap.isEmpty_iff_forall_not_mem,
-               LawfulMemSizy.size_zero_iff_forall_not_mem]
+               LawfulMemSize.size_zero_iff_forall_not_mem]
 
-instance {α β} [BEq α] [Hashable α] [EquivBEq α] [LawfulHashable α] : LawfulIsEmptySizy (HashMap α β) where
+instance {α β} [BEq α] [Hashable α] [EquivBEq α] [LawfulHashable α] : LawfulIsEmptySize (HashMap α β) where
   isEmpty_iff_size_eq_zero := by
     intro m
     simp only [IsEmpty.isEmpty, HashMap.isEmpty_iff_forall_not_mem,
-               LawfulMemSizy.size_zero_iff_forall_not_mem]
+               LawfulMemSize.size_zero_iff_forall_not_mem]
 
-instance {α} : LawfulIsEmptySizy (OptArr α) where
+instance {α} : LawfulIsEmptySize (OptArr α) where
   isEmpty_iff_size_eq_zero := OptArr.isEmpty_iff_size_eq_zero
 
-instance {α β} [Ord α] [TransOrd α] : LawfulIsEmptySizy (TreeMap α β) where
+instance {α β} [Ord α] [TransOrd α] : LawfulIsEmptySize (TreeMap α β) where
   isEmpty_iff_size_eq_zero := by
     intro m
     simp only [IsEmpty.isEmpty, TreeMap.isEmpty_iff_forall_not_mem,
-               LawfulMemSizy.size_zero_iff_forall_not_mem]
+               LawfulMemSize.size_zero_iff_forall_not_mem]
 
-instance {α β} [BEq α] [Hashable α] [EquivBEq α] [LawfulHashable α] : LawfulIsEmptySizy (ExtHashMap α β) where
+instance {α β} [BEq α] [Hashable α] [EquivBEq α] [LawfulHashable α] : LawfulIsEmptySize (ExtHashMap α β) where
   isEmpty_iff_size_eq_zero := by
     intro m
     simp only [IsEmpty.isEmpty, ExtHashMap.isEmpty_iff]
     rw [ExtHashMap.eq_empty_iff_forall_not_mem,
-        LawfulMemSizy.size_zero_iff_forall_not_mem (α:=α)]
+        LawfulMemSize.size_zero_iff_forall_not_mem (α:=α)]
 
-instance {α β} [Ord α] [TransOrd α] : LawfulIsEmptySizy (ExtTreeMap α β) where
+instance {α β} [Ord α] [TransOrd α] : LawfulIsEmptySize (ExtTreeMap α β) where
   isEmpty_iff_size_eq_zero := by
     intro m
     simp only [IsEmpty.isEmpty, ExtTreeMap.isEmpty_iff_forall_not_mem,
-               LawfulMemSizy.size_zero_iff_forall_not_mem]
+               LawfulMemSize.size_zero_iff_forall_not_mem]
 
-instance {α} [BEq α] [Hashable α] [EquivBEq α] [LawfulHashable α] : LawfulIsEmptySizy (HashSet α) where
+instance {α} [BEq α] [Hashable α] [EquivBEq α] [LawfulHashable α] : LawfulIsEmptySize (HashSet α) where
   isEmpty_iff_size_eq_zero := by
     intro m
     simp only [IsEmpty.isEmpty, HashSet.isEmpty_iff_forall_not_mem,
-               LawfulMemSizy.size_zero_iff_forall_not_mem]
+               LawfulMemSize.size_zero_iff_forall_not_mem]
 
-instance {α} [Ord α] [TransOrd α] : LawfulIsEmptySizy (TreeSet α) where
+instance {α} [Ord α] [TransOrd α] : LawfulIsEmptySize (TreeSet α) where
   isEmpty_iff_size_eq_zero := by
     intro m
     simp only [IsEmpty.isEmpty, TreeSet.isEmpty_iff_forall_not_mem,
-               LawfulMemSizy.size_zero_iff_forall_not_mem]
+               LawfulMemSize.size_zero_iff_forall_not_mem]
 
 class LawfulContainsMem (γ α) [Contains γ α] [Membership α γ] where
   contains_iff_mem {m : γ} {k : α} : Contains.contains m k ↔ k ∈ m

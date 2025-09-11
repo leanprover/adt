@@ -7,7 +7,7 @@ This library defines uniform APIs for data structures that have common operation
 * Sets: `HashSet`, `TreeSet`, `ExtHashSet`, `ExtTreeSet`
 
 To increase modularity, this library also have low-level typeclasses for basic operations on data structures
-* The `Sizy` class: `Sizy.size`
+* The `Size` class: `Size.size`
 * The `Foldl`, `FoldlM`, `Foldr`, and `FoldrM` classes: `Foldl.foldl`, `FoldlM.foldlM`, `Foldr.foldr`, `FoldrM.foldrM`
 * The `ToList` class: `ToList.toList`
 * The `DGetElem` and `DGetElem?` classes: `dGetElem, dGetElem?` and `dGetElem!`. We also defined notations for these operations
@@ -15,4 +15,4 @@ To increase modularity, this library also have low-level typeclasses for basic o
   * `dGetElem?`: `x[m]ᵈ?`
   * `dGetElem!`: `x[m]ᵈ!`
 
-The `IndexMap` file is an example use case of the `Mapy` class. We also included a utility that automatically generates equational theorems for functions that return structure instances. This utility is used by `IndexMap`.
+The `IndexMap` file is an example use case of the `MapLike` class. We also included a utility that automatically generates equational theorems for functions that return structure instances. This utility is used by `IndexMap`.

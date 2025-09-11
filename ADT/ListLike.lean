@@ -5,8 +5,8 @@ Authors: Yicheng Qian
 -/
 
 import Lean
-import ADT.Sizy
-import ADT.Foldy
+import ADT.Size
+import ADT.Fold
 open Lean Std
 
 class ToList (γ : Type u) (α : Type v) where
@@ -36,8 +36,8 @@ instance {α} [BEq α] [Hashable α] : ToList (HashSet α) α where
 instance {α} [Ord α] : ToList (TreeSet α) α where
   toList := TreeSet.toList
 
-class LawfulSizyToList (γ : Type u) (α : Type v) [Sizy γ] [ToList γ α] where
-  length_toList_eq_size {m : γ} : (ToList.toList (α:=α) m).length = Sizy.size m
+class LawfulSizeToList (γ : Type u) (α : Type v) [Size γ] [ToList γ α] where
+  length_toList_eq_size {m : γ} : (ToList.toList (α:=α) m).length = Size.size m
 
 class LawfulFoldlToList (γ : Type u) (α : Type v) [Foldl γ α] [ToList γ α] where
   foldl_eq_foldl_toList {m : γ} {β} {f : β → α → β} {init : β} : Foldl.foldl f init m = (ToList.toList m).foldl f init
@@ -53,7 +53,7 @@ class LawfulFoldrMToList (γ : Type u) (α : Type v) [FoldrM γ α] [ToList γ �
   extends LawfulFoldrM γ α where
   foldrM_eq_foldrM_toList {m : γ} {β} {n} [Monad n] [LawfulMonad n] {f : α → β → n β} {init : β} : FoldrM.foldrM f init m = (ToList.toList m).foldrM f init
 
-instance {α} : LawfulSizyToList (List α) α where
+instance {α} : LawfulSizeToList (List α) α where
   length_toList_eq_size := rfl
 
 instance {α} : LawfulFoldlToList (List α) α where
@@ -68,7 +68,7 @@ instance {α} : LawfulFoldlMToList (List α) α where
 instance {α} : LawfulFoldrMToList (List α) α where
   foldrM_eq_foldrM_toList := rfl
 
-instance {α} : LawfulSizyToList (Array α) α where
+instance {α} : LawfulSizeToList (Array α) α where
   length_toList_eq_size := rfl
 
 instance {α} : LawfulFoldlToList (Array α) α where
@@ -91,10 +91,10 @@ instance {α} : LawfulFoldrMToList (Array α) α where
     intros
     simp only [ToList.toList, FoldrM.foldrM, Array.foldrM_toList]
 
-instance {α} [BEq α] [Hashable α] [EquivBEq α] [LawfulHashable α] : LawfulSizyToList (HashSet α) α where
+instance {α} [BEq α] [Hashable α] [EquivBEq α] [LawfulHashable α] : LawfulSizeToList (HashSet α) α where
   length_toList_eq_size := by
     intros
-    simp only [ToList.toList, Sizy.size, HashSet.length_toList]
+    simp only [ToList.toList, Size.size, HashSet.length_toList]
 
 instance {α} [BEq α] [Hashable α] : LawfulFoldlToList (HashSet α) α where
   foldl_eq_foldl_toList := by
@@ -106,10 +106,10 @@ instance {α} [BEq α] [Hashable α] : LawfulFoldlMToList (HashSet α) α where
     intros
     simp only [ToList.toList, FoldlM.foldlM, HashSet.foldM_eq_foldlM_toList]
 
-instance {α} [Ord α] [TransOrd α] : LawfulSizyToList (TreeSet α) α where
+instance {α} [Ord α] [TransOrd α] : LawfulSizeToList (TreeSet α) α where
   length_toList_eq_size := by
     intros
-    simp only [ToList.toList, Sizy.size, TreeSet.length_toList]
+    simp only [ToList.toList, Size.size, TreeSet.length_toList]
 
 instance {α} [Ord α] : LawfulFoldlToList (TreeSet α) α where
   foldl_eq_foldl_toList := by
@@ -131,10 +131,10 @@ instance {α} [Ord α] : LawfulFoldrMToList (TreeSet α) α where
     intros
     simp only [ToList.toList, FoldrM.foldrM, TreeSet.foldrM_eq_foldrM_toList]
 
-instance {α β} [BEq α] [Hashable α] [EquivBEq α] [LawfulHashable α] : LawfulSizyToList (DHashMap α β) (Sigma β) where
+instance {α β} [BEq α] [Hashable α] [EquivBEq α] [LawfulHashable α] : LawfulSizeToList (DHashMap α β) (Sigma β) where
   length_toList_eq_size := by
     intros
-    simp only [ToList.toList, Sizy.size, DHashMap.length_toList]
+    simp only [ToList.toList, Size.size, DHashMap.length_toList]
 
 instance {α β} [BEq α] [Hashable α] : LawfulFoldlToList (DHashMap α β) (Sigma β) where
   foldl_eq_foldl_toList := by
@@ -146,10 +146,10 @@ instance {α β} [BEq α] [Hashable α] : LawfulFoldlMToList (DHashMap α β) (S
     intros
     simp only [ToList.toList, FoldlM.foldlM, DHashMap.foldM_eq_foldlM_toList]
 
-instance {α β} [Ord α] [TransOrd α] : LawfulSizyToList (DTreeMap α β) (Sigma β) where
+instance {α β} [Ord α] [TransOrd α] : LawfulSizeToList (DTreeMap α β) (Sigma β) where
   length_toList_eq_size := by
     intros
-    simp only [ToList.toList, Sizy.size, DTreeMap.length_toList]
+    simp only [ToList.toList, Size.size, DTreeMap.length_toList]
 
 instance {α β} [Ord α] : LawfulFoldlToList (DTreeMap α β) (Sigma β) where
   foldl_eq_foldl_toList := by
@@ -171,10 +171,10 @@ instance {α β} [Ord α] : LawfulFoldrMToList (DTreeMap α β) (Sigma β) where
     intros
     simp only [ToList.toList, FoldrM.foldrM, DTreeMap.foldrM_eq_foldrM_toList]
 
-instance {α β} [BEq α] [Hashable α] [EquivBEq α] [LawfulHashable α] : LawfulSizyToList (HashMap α β) (α × β) where
+instance {α β} [BEq α] [Hashable α] [EquivBEq α] [LawfulHashable α] : LawfulSizeToList (HashMap α β) (α × β) where
   length_toList_eq_size := by
     intros
-    simp only [ToList.toList, Sizy.size, HashMap.length_toList]
+    simp only [ToList.toList, Size.size, HashMap.length_toList]
 
 instance {α β} [BEq α] [Hashable α] : LawfulFoldlToList (HashMap α β) (α × β) where
   foldl_eq_foldl_toList := by
@@ -186,10 +186,10 @@ instance {α β} [BEq α] [Hashable α] : LawfulFoldlMToList (HashMap α β) (α
     intros
     simp only [ToList.toList, FoldlM.foldlM, HashMap.foldM_eq_foldlM_toList]
 
-instance {α β} [Ord α] [TransOrd α] : LawfulSizyToList (TreeMap α β) (α × β) where
+instance {α β} [Ord α] [TransOrd α] : LawfulSizeToList (TreeMap α β) (α × β) where
   length_toList_eq_size := by
     intros
-    simp only [ToList.toList, Sizy.size, TreeMap.length_toList]
+    simp only [ToList.toList, Size.size, TreeMap.length_toList]
 
 instance {α β} [Ord α] : LawfulFoldlToList (TreeMap α β) (α × β) where
   foldl_eq_foldl_toList := by

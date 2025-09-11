@@ -4,15 +4,15 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Yicheng Qian
 -/
 
-import ADT.Mapy
-import ADT.Memy
-import ADT.Listy
+import ADT.MapLike
+import ADT.Mem
+import ADT.ListLike
 open Std
 
 section DMapAPI
 
 class DMapAPI (γ : Type u) (α : Type v) (β : α → Type w) extends
-  DMapy γ α β, IsEmpty γ, Contains γ α where
+  DMapLike γ α β, IsEmpty γ, Contains γ α where
   insertIfNew : γ → (a : α) → β a → γ
   containsThenInsert : γ → (a : α) → β a → Bool × γ
   containsThenInsertIfNew : γ → (a : α) → β a → Bool × γ
@@ -21,10 +21,10 @@ class DMapAPI (γ : Type u) (α : Type v) (β : α → Type w) extends
   modify : γ → (a : α) → (β a → β a) → γ
   alter : γ → (a : α) → (Option (β a) → Option (β a)) → γ
 
-open DMapAPI DMapy
+open DMapAPI DMapLike
 
 class LawfulDMapAPI (γ : Type u) (α : Type v) (β : α → Type w) [inst : DMapAPI γ α β]
-  extends LawfulDMapy γ α β, LawfulIsEmptySizy γ, LawfulContainsMem γ α where
+  extends LawfulDMapLike γ α β, LawfulIsEmptySize γ, LawfulContainsMem γ α where
   dGetElem?_insertIfNew_self {m : γ} {k : α} {v : β k} (h : k ∉ m) :
     (insertIfNew m k v)[k]ᵈ? = .some v
   dGetElem?_insertIfNew_ne {m : γ} {k a : α} {v : β k} (h : k ≠ a ∨ k ∈ m) :
@@ -47,25 +47,25 @@ class LawfulDMapAPI (γ : Type u) (α : Type v) (β : α → Type w) [inst : DMa
 
 namespace LawfulDMapAPI
 
-  open LawfulDMapy
+  open LawfulDMapLike
 
   theorem isEmpty_congr {γ₁ γ₂ α β} [inst₁ : DMapAPI γ₁ α β] [inst₂ : DMapAPI γ₂ α β]
     [LawfulDMapAPI γ₁ α β] [LawfulDMapAPI γ₂ α β] {m₁ : γ₁} {m₂ : γ₂}
     (hequiv : equiv (β:=β) m₁ m₂) : IsEmpty.isEmpty m₁ = IsEmpty.isEmpty m₂ := by
     rw [Bool.eq_iff_iff]
-    simp only [LawfulIsEmptySizy.isEmpty_iff_size_eq_zero]
+    simp only [LawfulIsEmptySize.isEmpty_iff_size_eq_zero]
     rw [size_congr hequiv]
 
   theorem isEmpty_erase {γ α β} [inst : DMapAPI γ α β] [LawfulDMapAPI γ α β]
-    {m : γ} {k : α} : IsEmpty.isEmpty (erase (β:=β) m k) = (IsEmpty.isEmpty m || (Sizy.size m == 1 && Contains.contains m k)) := by
+    {m : γ} {k : α} : IsEmpty.isEmpty (erase (β:=β) m k) = (IsEmpty.isEmpty m || (Size.size m == 1 && Contains.contains m k)) := by
     rw [Bool.eq_iff_iff]
     simp only [Bool.or_eq_true, Bool.and_eq_true, beq_iff_eq,
-               LawfulContainsMem.contains_iff_mem, LawfulIsEmptySizy.isEmpty_iff_size_eq_zero]
+               LawfulContainsMem.contains_iff_mem, LawfulIsEmptySize.isEmpty_iff_size_eq_zero]
     grind [size_erase_mem, size_erase_not_mem]
 
   theorem isEmpty_insert_eq_false {γ α β} [inst : DMapAPI γ α β] [LawfulDMapAPI γ α β]
     {m : γ} {k : α} {v : β k} : IsEmpty.isEmpty (insert m k v) = false := by
-    rw [LawfulIsEmptySizy.isEmpty_eq_false_iff_size_gt_zero]
+    rw [LawfulIsEmptySize.isEmpty_eq_false_iff_size_gt_zero]
     apply size_insert_gt_zero
 
   theorem contains_congr {γ₁ γ₂ α β} [inst₁ : DMapAPI γ₁ α β] [inst₂ : DMapAPI γ₂ α β]
@@ -81,7 +81,7 @@ namespace LawfulDMapAPI
 
   theorem isEmpty_iff_forall_not_mem {γ α β} [inst : DMapAPI γ α β] [LawfulDMapAPI γ α β]
     {m : γ} : IsEmpty.isEmpty m ↔ ∀ (x : α), x ∉ m := by
-    rw [LawfulIsEmptySizy.isEmpty_iff_size_eq_zero, LawfulMemSizy.size_zero_iff_forall_not_mem (α:=α)]
+    rw [LawfulIsEmptySize.isEmpty_iff_size_eq_zero, LawfulMemSize.size_zero_iff_forall_not_mem (α:=α)]
 
   theorem insertIfNew_equiv_of_mem {γ α β} [inst : DMapAPI γ α β] [LawfulDMapAPI γ α β]
     {m : γ} {k : α} {v : β k} (h : k ∈ m) : equiv (β:=β) (insertIfNew m k v) m := by
@@ -113,15 +113,15 @@ namespace LawfulDMapAPI
     case true => simp [*]
 
   theorem size_insertIfNew_mem {γ α β} [inst : DMapAPI γ α β] [LawfulDMapAPI γ α β]
-    {m : γ} {k : α} {v : β k} (h : k ∈ m) : Sizy.size (insertIfNew m k v) = Sizy.size m := by
+    {m : γ} {k : α} {v : β k} (h : k ∈ m) : Size.size (insertIfNew m k v) = Size.size m := by
     rw [size_congr (insertIfNew_equiv_of_mem h)]
 
   theorem size_insertIfNew_not_mem {γ α β} [inst : DMapAPI γ α β] [LawfulDMapAPI γ α β]
-    {m : γ} {k : α} {v : β k} (h : k ∉ m) : Sizy.size (insertIfNew m k v) = Sizy.size m + 1 := by
+    {m : γ} {k : α} {v : β k} (h : k ∉ m) : Size.size (insertIfNew m k v) = Size.size m + 1 := by
     rw [size_congr (insertIfNew_equiv_of_not_mem h), size_insert_not_mem h]
 
   theorem size_insertIfNew {γ α β} [inst : DMapAPI γ α β] [LawfulDMapAPI γ α β]
-    {m : γ} {k : α} [Decidable (k ∈ m)] {v : β k} : Sizy.size (insertIfNew m k v) = if k ∈ m then Sizy.size m else Sizy.size m + 1 := by
+    {m : γ} {k : α} [Decidable (k ∈ m)] {v : β k} : Size.size (insertIfNew m k v) = if k ∈ m then Size.size m else Size.size m + 1 := by
     grind [size_insertIfNew_mem, size_insertIfNew_not_mem]
 
   theorem mem_insertIfNew' {γ α β} [inst : DMapAPI γ α β] [LawfulDMapAPI γ α β]
@@ -231,13 +231,13 @@ namespace LawfulDMapAPI
 
   theorem size_filter_le_size {γ α β} [inst : DMapAPI γ α β] [LawfulDMapAPI γ α β]
     {m : γ} {f : (a : α) → β a → Bool} :
-    Sizy.size (filter f m) ≤ Sizy.size m := by
+    Size.size (filter f m) ≤ Size.size m := by
     apply size_le_of_keySubset
     apply filter_keySubset
 
   theorem size_filter_eq_size_iff {γ α β} [inst : DMapAPI γ α β] [LawfulDMapAPI γ α β]
     {m : γ} {f : (a : α) → β a → Bool} :
-    Sizy.size (filter f m) = Sizy.size m ↔ ∀ (k : α) (h : k ∈ m), f k (m[k]ᵈ'h) := by
+    Size.size (filter f m) = Size.size m ↔ ∀ (k : α) (h : k ∈ m), f k (m[k]ᵈ'h) := by
     have hsub := filter_keySubset (m:=m) (f:=f)
     have hequiv := keyEquiv_iff_size_eq_and_keySubset (β:=β) (m₁:=filter f m) (m₂:=m)
     simp only [hsub, and_true] at hequiv
@@ -270,13 +270,13 @@ namespace LawfulDMapAPI
     fun _ => mem_modify
 
   theorem size_modify {γ α β} [inst : DMapAPI γ α β] [LawfulDMapAPI γ α β]
-    {m : γ} {k : α} {f : β k → β k} : Sizy.size (modify m k f) = Sizy.size m := by
+    {m : γ} {k : α} {f : β k → β k} : Size.size (modify m k f) = Size.size m := by
     apply size_eq_of_keyEquiv; apply modify_keyEquiv
 
   theorem isEmpty_modify {γ α β} [inst : DMapAPI γ α β] [LawfulDMapAPI γ α β]
     {m : γ} {k : α} {f : β k → β k} : IsEmpty.isEmpty (modify m k f) = IsEmpty.isEmpty m := by
     apply Bool.eq_iff_iff.mpr
-    simp only [LawfulIsEmptySizy.isEmpty_iff_size_eq_zero, size_modify]
+    simp only [LawfulIsEmptySize.isEmpty_iff_size_eq_zero, size_modify]
 
   theorem dGetElem_modify_self {γ α β} [inst : DMapAPI γ α β] [LawfulDMapAPI γ α β]
     {m : γ} {k : α} {f : β k → β k} (h : k ∈ modify m k f) :
@@ -367,34 +367,34 @@ namespace LawfulDMapAPI
   theorem size_alter_eq_add_one {γ α β} [inst : DMapAPI γ α β] [LawfulDMapAPI γ α β]
     {m : γ} {k : α} {f : Option (β k) → Option (β k)}
     (h : ¬k ∈ m) (h' : (f m[k]ᵈ?).isSome) :
-    Sizy.size (alter m k f) = Sizy.size m + 1 := by
+    Size.size (alter m k f) = Size.size m + 1 := by
     have ⟨a, ha⟩ := Option.isSome_iff_exists.mp h'
     rw [size_congr (alter_some ha), size_insert_not_mem h]
 
   theorem size_alter_eq_self_of_mem {γ α β} [inst : DMapAPI γ α β] [LawfulDMapAPI γ α β]
     {m : γ} {k : α} {f : Option (β k) → Option (β k)}
     (h : k ∈ m) (h' : (f m[k]ᵈ?).isSome) :
-    Sizy.size (alter m k f) = Sizy.size m := by
+    Size.size (alter m k f) = Size.size m := by
     have ⟨a, ha⟩ := Option.isSome_iff_exists.mp h'
     rw [size_congr (alter_some ha), size_insert_mem h]
 
   theorem size_alter_eq_self_of_not_mem {γ α β} [inst : DMapAPI γ α β] [LawfulDMapAPI γ α β]
     {m : γ} {k : α} {f : Option (β k) → Option (β k)}
     (h : k ∉ m) (h' : (f m[k]ᵈ?).isNone) :
-    Sizy.size (alter m k f) = Sizy.size m := by
+    Size.size (alter m k f) = Size.size m := by
     rw [Option.isNone_iff_eq_none] at h'
     rw [size_congr (alter_none h'), size_erase_not_mem h]
 
   theorem size_alter_eq_sub_one {γ α β} [inst : DMapAPI γ α β] [LawfulDMapAPI γ α β]
     {m : γ} {k : α} {f : Option (β k) → Option (β k)}
     (h : k ∈ m) (h' : (f m[k]ᵈ?).isNone) :
-    Sizy.size (alter m k f) + 1 = Sizy.size m := by
+    Size.size (alter m k f) + 1 = Size.size m := by
     rw [Option.isNone_iff_eq_none] at h'
     rw [size_congr (alter_none h'), size_erase_mem h]
 
   theorem size_alter_le_size {γ α β} [inst : DMapAPI γ α β] [LawfulDMapAPI γ α β]
     {m : γ} {k : α} {f : Option (β k) → Option (β k)} :
-    Sizy.size (alter m k f) ≤ Sizy.size m + 1 := by
+    Size.size (alter m k f) ≤ Size.size m + 1 := by
     cases h : f m[k]ᵈ?
     case none =>
       rw [size_congr (alter_none h)]
@@ -405,7 +405,7 @@ namespace LawfulDMapAPI
 
   theorem size_le_size_alter {γ α β} [inst : DMapAPI γ α β] [LawfulDMapAPI γ α β]
     {m : γ} {k : α} {f : Option (β k) → Option (β k)} :
-    Sizy.size m ≤ Sizy.size (alter m k f) + 1:= by
+    Size.size m ≤ Size.size (alter m k f) + 1:= by
     cases h : f m[k]ᵈ?
     case none =>
       rw [size_congr (alter_none h)]
@@ -416,7 +416,7 @@ namespace LawfulDMapAPI
 
   theorem isEmpty_alter {γ α β} [inst : DMapAPI γ α β] [LawfulDMapAPI γ α β]
     {m : γ} {k : α} {f : Option (β k) → Option (β k)} :
-    IsEmpty.isEmpty (alter m k f) = ((IsEmpty.isEmpty m || Sizy.size m == 1 && Contains.contains m k) && (f m[k]ᵈ?).isNone) := by
+    IsEmpty.isEmpty (alter m k f) = ((IsEmpty.isEmpty m || Size.size m == 1 && Contains.contains m k) && (f m[k]ᵈ?).isNone) := by
     cases h : f m[k]ᵈ?
     case none => simp [isEmpty_congr (alter_none h), isEmpty_erase]
     case some => simp [isEmpty_congr (alter_some h), isEmpty_insert_eq_false]
@@ -602,7 +602,7 @@ end DMapAPI
 section MapAPI
 
 class MapAPI (γ : Type u) (α : Type v) (β : Type w) extends
-  Mapy γ α β, IsEmpty γ, Contains γ α where
+  MapLike γ α β, IsEmpty γ, Contains γ α where
   insertIfNew : γ → α → β → γ
   containsThenInsert : γ → α → β → Bool × γ
   containsThenInsertIfNew : γ → α → β → Bool × γ
@@ -612,7 +612,7 @@ class MapAPI (γ : Type u) (α : Type v) (β : Type w) extends
   alter : γ → α → (Option β → Option β) → γ
 
 def MapAPI_of_DMapAPI {γ α β} (inst : DMapAPI γ α (fun _ => β)) : MapAPI γ α β where
-  toMapy := Mapy_of_DMapy inst.toDMapy
+  toMapLike := MapLike_of_DMapLike inst.toDMapLike
   insertIfNew := inst.insertIfNew
   containsThenInsert := inst.containsThenInsert
   containsThenInsertIfNew := inst.containsThenInsertIfNew
@@ -622,7 +622,7 @@ def MapAPI_of_DMapAPI {γ α β} (inst : DMapAPI γ α (fun _ => β)) : MapAPI �
   alter := inst.alter
 
 def DMapAPI_of_MapAPI {γ α β} (inst : MapAPI γ α β) : DMapAPI γ α (fun _ => β) where
-  toDMapy := DMapy_of_Mapy inst.toMapy
+  toDMapLike := DMapLike_of_MapLike inst.toMapLike
   insertIfNew := inst.insertIfNew
   containsThenInsert := inst.containsThenInsert
   containsThenInsertIfNew := inst.containsThenInsertIfNew
@@ -637,10 +637,10 @@ def DMapAPI_MapAPI_inv {γ α β} {inst : DMapAPI γ α (fun _ => β)} :
 def MapAPI_DMapAPI_inv {γ α β} {inst : MapAPI γ α β} :
   MapAPI_of_DMapAPI (DMapAPI_of_MapAPI inst) = inst := rfl
 
-open MapAPI Mapy
+open MapAPI MapLike
 
 class LawfulMapAPI (γ : Type u) (α : Type v) (β : Type w) [inst : MapAPI γ α β]
-  extends LawfulMapy γ α β, LawfulIsEmptySizy γ, LawfulContainsMem γ α where
+  extends LawfulMapLike γ α β, LawfulIsEmptySize γ, LawfulContainsMem γ α where
   getElem?_insertIfNew_self {m : γ} {k : α} {v : β} (h : k ∉ m) :
     (insertIfNew m k v)[k]? = .some v
   getElem?_insertIfNew_ne {m : γ} {k a : α} {v : β} (h : k ≠ a ∨ k ∈ m) :
@@ -664,7 +664,7 @@ class LawfulMapAPI (γ : Type u) (α : Type v) (β : Type w) [inst : MapAPI γ �
 def LawfulMapAPI_of_LawfulDMapAPI {γ α β} [inst : MapAPI γ α β]
   [instL : LawfulDMapAPI (inst:=DMapAPI_of_MapAPI inst) γ α (fun _ => β)] :
   LawfulMapAPI γ α β where
-  toLawfulMapy := LawfulMapy_of_LawfulDMapy (inst:=inst.toMapy) (instL:=instL.toLawfulDMapy)
+  toLawfulMapLike := LawfulMapLike_of_LawfulDMapLike (inst:=inst.toMapLike) (instL:=instL.toLawfulDMapLike)
   isEmpty_iff_size_eq_zero := instL.isEmpty_iff_size_eq_zero
   contains_iff_mem := instL.contains_iff_mem
   getElem?_insertIfNew_self := instL.dGetElem?_insertIfNew_self
@@ -689,7 +689,7 @@ theorem LawfulMapAPI_of_LawfulDMapAPI' {γ α β} [inst : DMapAPI γ α (fun _ =
 def LawfulDMapAPI_of_LawfulMapAPI {γ α β} [inst : DMapAPI γ α (fun _ => β)]
   [instL : LawfulMapAPI (inst:=MapAPI_of_DMapAPI inst) γ α β] :
   LawfulDMapAPI γ α (fun _ => β) where
-  toLawfulDMapy := LawfulDMapy_of_LawfulMapy (inst:=inst.toDMapy) (instL:=instL.toLawfulMapy)
+  toLawfulDMapLike := LawfulDMapLike_of_LawfulMapLike (inst:=inst.toDMapLike) (instL:=instL.toLawfulMapLike)
   isEmpty_iff_size_eq_zero := instL.isEmpty_iff_size_eq_zero
   contains_iff_mem := instL.contains_iff_mem
   dGetElem?_insertIfNew_self := instL.getElem?_insertIfNew_self
@@ -713,7 +713,7 @@ local instance LawfulDMapAPI_of_LawfulMapAPI' {γ α β} [inst : MapAPI γ α β
 
 namespace LawfulMapAPI
 
-  open LawfulMapy
+  open LawfulMapLike
 
   theorem isEmpty_congr {γ₁ γ₂ α β} [inst₁ : MapAPI γ₁ α β] [inst₂ : MapAPI γ₂ α β]
     [LawfulMapAPI γ₁ α β] [LawfulMapAPI γ₂ α β] {m₁ : γ₁} {m₂ : γ₂}
@@ -721,7 +721,7 @@ namespace LawfulMapAPI
     LawfulDMapAPI.isEmpty_congr (inst₁:=DMapAPI_of_MapAPI inst₁) (inst₂:=DMapAPI_of_MapAPI inst₂) hequiv
 
   theorem isEmpty_erase {γ α β} [inst : MapAPI γ α β] [LawfulMapAPI γ α β]
-    {m : γ} {k : α} : IsEmpty.isEmpty (erase (β:=β) m k) = (IsEmpty.isEmpty m || (Sizy.size m == 1 && Contains.contains m k)) :=
+    {m : γ} {k : α} : IsEmpty.isEmpty (erase (β:=β) m k) = (IsEmpty.isEmpty m || (Size.size m == 1 && Contains.contains m k)) :=
     LawfulDMapAPI.isEmpty_erase (inst:=DMapAPI_of_MapAPI inst)
 
   theorem isEmpty_insert_eq_false {γ α β} [inst : MapAPI γ α β] [LawfulMapAPI γ α β]
@@ -760,15 +760,15 @@ namespace LawfulMapAPI
     LawfulDMapAPI.insertIfNew_congr (inst₁:=DMapAPI_of_MapAPI inst₁) (inst₂:=DMapAPI_of_MapAPI inst₂) hequiv _ _
 
   theorem size_insertIfNew_mem {γ α β} [inst : MapAPI γ α β] [LawfulMapAPI γ α β]
-    {m : γ} {k : α} {v : β} (h : k ∈ m) : Sizy.size (insertIfNew m k v) = Sizy.size m :=
+    {m : γ} {k : α} {v : β} (h : k ∈ m) : Size.size (insertIfNew m k v) = Size.size m :=
     LawfulDMapAPI.size_insertIfNew_mem (inst:=DMapAPI_of_MapAPI inst) h
 
   theorem size_insertIfNew_not_mem {γ α β} [inst : MapAPI γ α β] [LawfulMapAPI γ α β]
-    {m : γ} {k : α} {v : β} (h : k ∉ m) : Sizy.size (insertIfNew m k v) = Sizy.size m + 1 :=
+    {m : γ} {k : α} {v : β} (h : k ∉ m) : Size.size (insertIfNew m k v) = Size.size m + 1 :=
     LawfulDMapAPI.size_insertIfNew_not_mem (inst:=DMapAPI_of_MapAPI inst) h
 
   theorem size_insertIfNew {γ α β} [inst : MapAPI γ α β] [LawfulMapAPI γ α β]
-    {m : γ} {k : α} [Decidable (k ∈ m)] {v : β} : Sizy.size (insertIfNew m k v) = if k ∈ m then Sizy.size m else Sizy.size m + 1 :=
+    {m : γ} {k : α} [Decidable (k ∈ m)] {v : β} : Size.size (insertIfNew m k v) = if k ∈ m then Size.size m else Size.size m + 1 :=
     LawfulDMapAPI.size_insertIfNew (inst:=DMapAPI_of_MapAPI inst)
 
   theorem mem_insertIfNew' {γ α β} [inst : MapAPI γ α β] [LawfulMapAPI γ α β]
@@ -866,12 +866,12 @@ namespace LawfulMapAPI
 
   theorem size_filter_le_size {γ α β} [inst : MapAPI γ α β] [LawfulMapAPI γ α β]
     {m : γ} {f : α → β → Bool} :
-    Sizy.size (filter f m) ≤ Sizy.size m :=
+    Size.size (filter f m) ≤ Size.size m :=
     LawfulDMapAPI.size_filter_le_size (inst:=DMapAPI_of_MapAPI inst)
 
   theorem size_filter_eq_size_iff {γ α β} [inst : MapAPI γ α β] [LawfulMapAPI γ α β]
     {m : γ} {f : α → β → Bool} :
-    Sizy.size (filter f m) = Sizy.size m ↔ ∀ (k : α) (h : k ∈ m), f k (m[k]'h) :=
+    Size.size (filter f m) = Size.size m ↔ ∀ (k : α) (h : k ∈ m), f k (m[k]'h) :=
     LawfulDMapAPI.size_filter_eq_size_iff (inst:=DMapAPI_of_MapAPI inst)
 
   theorem modify_congr {γ₁ γ₂ α β} [inst₁ : MapAPI γ₁ α β] [inst₂ : MapAPI γ₂ α β]
@@ -893,7 +893,7 @@ namespace LawfulMapAPI
     fun _ => mem_modify
 
   theorem size_modify {γ α β} [inst : MapAPI γ α β] [LawfulMapAPI γ α β]
-    {m : γ} {k : α} {f : β → β} : Sizy.size (modify m k f) = Sizy.size m :=
+    {m : γ} {k : α} {f : β → β} : Size.size (modify m k f) = Size.size m :=
     LawfulDMapAPI.size_modify (inst:=DMapAPI_of_MapAPI inst)
 
   theorem isEmpty_modify {γ α β} [inst : MapAPI γ α β] [LawfulMapAPI γ α β]
@@ -968,40 +968,40 @@ namespace LawfulMapAPI
   theorem size_alter_eq_add_one {γ α β} [inst : MapAPI γ α β] [LawfulMapAPI γ α β]
     {m : γ} {k : α} {f : Option β → Option β}
     (h : ¬k ∈ m) (h' : (f m[k]?).isSome) :
-    Sizy.size (alter m k f) = Sizy.size m + 1 :=
+    Size.size (alter m k f) = Size.size m + 1 :=
     LawfulDMapAPI.size_alter_eq_add_one (inst:=DMapAPI_of_MapAPI inst) h h'
 
   theorem size_alter_eq_self_of_mem {γ α β} [inst : MapAPI γ α β] [LawfulMapAPI γ α β]
     {m : γ} {k : α} {f : Option β → Option β}
     (h : k ∈ m) (h' : (f m[k]?).isSome) :
-    Sizy.size (alter m k f) = Sizy.size m :=
+    Size.size (alter m k f) = Size.size m :=
     LawfulDMapAPI.size_alter_eq_self_of_mem (inst:=DMapAPI_of_MapAPI inst) h h'
 
   theorem size_alter_eq_self_of_not_mem {γ α β} [inst : MapAPI γ α β] [LawfulMapAPI γ α β]
     {m : γ} {k : α} {f : Option β → Option β}
     (h : k ∉ m) (h' : (f m[k]?).isNone) :
-    Sizy.size (alter m k f) = Sizy.size m :=
+    Size.size (alter m k f) = Size.size m :=
     LawfulDMapAPI.size_alter_eq_self_of_not_mem (inst:=DMapAPI_of_MapAPI inst) h h'
 
   theorem size_alter_eq_sub_one {γ α β} [inst : MapAPI γ α β] [LawfulMapAPI γ α β]
     {m : γ} {k : α} {f : Option β → Option β}
     (h : k ∈ m) (h' : (f m[k]?).isNone) :
-    Sizy.size (alter m k f) + 1 = Sizy.size m :=
+    Size.size (alter m k f) + 1 = Size.size m :=
     LawfulDMapAPI.size_alter_eq_sub_one (inst:=DMapAPI_of_MapAPI inst) h h'
 
   theorem size_alter_le_size {γ α β} [inst : MapAPI γ α β] [LawfulMapAPI γ α β]
     {m : γ} {k : α} {f : Option β → Option β} :
-    Sizy.size (alter m k f) ≤ Sizy.size m + 1 :=
+    Size.size (alter m k f) ≤ Size.size m + 1 :=
     LawfulDMapAPI.size_alter_le_size (inst:=DMapAPI_of_MapAPI inst)
 
   theorem size_le_size_alter {γ α β} [inst : MapAPI γ α β] [LawfulMapAPI γ α β]
     {m : γ} {k : α} {f : Option β → Option β} :
-    Sizy.size m ≤ Sizy.size (alter m k f) + 1:=
+    Size.size m ≤ Size.size (alter m k f) + 1:=
     LawfulDMapAPI.size_le_size_alter (inst:=DMapAPI_of_MapAPI inst)
 
   theorem isEmpty_alter {γ α β} [inst : MapAPI γ α β] [LawfulMapAPI γ α β]
     {m : γ} {k : α} {f : Option β → Option β} :
-    IsEmpty.isEmpty (alter m k f) = ((IsEmpty.isEmpty m || Sizy.size m == 1 && Contains.contains m k) && (f m[k]?).isNone) :=
+    IsEmpty.isEmpty (alter m k f) = ((IsEmpty.isEmpty m || Size.size m == 1 && Contains.contains m k) && (f m[k]?).isNone) :=
     LawfulDMapAPI.isEmpty_alter (inst:=DMapAPI_of_MapAPI inst)
 
   theorem isEmpty_alter_eq_isEmpty_erase {γ α β} [inst : MapAPI γ α β] [LawfulMapAPI γ α β]
