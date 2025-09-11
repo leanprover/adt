@@ -9,9 +9,12 @@ import Std.Data
 
 open Lean Std
 
+/-- This is the dependently typed version of `GetElem`. -/
 class DGetElem (coll : Type u) (idx : Type v) (elem : outParam (idx → Type w))
               (valid : outParam (coll → idx → Prop)) where
   /--
+  This is the dependently typed version of `getElem`.
+
   The syntax `arr[i]ᵈ` gets the `i`'th element of the collection `arr`. If there
   are proof side conditions to the application, they will be automatically
   inferred by the `get_elem_tactic` tactic.
@@ -28,15 +31,20 @@ macro_rules | `($x[$i]ᵈ) => `(dGetElem $x $i (by get_elem_tactic))
 syntax term noWs "[" withoutPosition(term) "]ᵈ'" term:max : term
 macro_rules | `($x[$i]ᵈ'$h) => `(dGetElem $x $i $h)
 
+/-- This is the dependently typed version of `GetElem?`. -/
 class DGetElem? (coll : Type u) (idx : Type v) (elem : outParam (idx → Type w))
     (valid : outParam (coll → idx → Prop)) extends DGetElem coll idx elem valid where
   /--
+  This is the dependently typed version of `getElem?`.
+
   The syntax `arr[i]ᵈ?` gets the `i`'th element of the collection `arr`,
   if it is present (and wraps it in `some`), and otherwise returns `none`.
   -/
   dGetElem? : coll → (i : idx) → Option (elem i)
 
   /--
+  This is the dependently typed version of `getElem!`
+
   The syntax `arr[i]ᵈ!` gets the `i`'th element of the collection `arr`,
   if it is present, and otherwise panics at runtime and returns the `default` term
   from `Inhabited (elem i)`.
@@ -46,16 +54,10 @@ class DGetElem? (coll : Type u) (idx : Type v) (elem : outParam (idx → Type w)
 
 export DGetElem? (dGetElem? dGetElem!)
 
-/--
-The syntax `arr[i]?` gets the `i`'th element of the collection `arr` or
-returns `none` if `i` is out of bounds.
--/
+@[inherit_doc dGetElem?]
 macro:max x:term noWs "[" i:term "]ᵈ" noWs "?" : term => `(dGetElem? $x $i)
 
-/--
-The syntax `arr[i]!` gets the `i`'th element of the collection `arr` and
-panics `i` is out of bounds.
--/
+@[inherit_doc dGetElem!]
 macro:max x:term noWs "[" i:term "]ᵈ" noWs "!" : term => `(dGetElem! $x $i)
 
 /--
@@ -66,13 +68,13 @@ satisfied, and fail when it is not.
 class LawfulDGetElem (cont : Type u) (idx : Type v) (elem : outParam (idx → Type w))
    (dom : outParam (cont → idx → Prop)) [ge : DGetElem? cont idx elem dom] : Prop where
 
-  /-- `GetElem?.getElem?` succeeds when the validity predicate is satisfied and fails otherwise. -/
+  /-- `DGetElem?.dGetElem?` succeeds when the validity predicate is satisfied and fails otherwise. -/
   dGetElem?_def (c : cont) (i : idx) [Decidable (dom c i)] :
     c[i]ᵈ? = if h : dom c i then some (c[i]ᵈ'h) else none := by
     intros
     try simp only [dGetElem?] <;> congr
 
-  /-- `GetElem?.getElem!` succeeds and fails when `GetElem.getElem?` succeeds and fails. -/
+  /-- `DGetElem?.dGetElem!` succeeds and fails when `DGetElem.dGetElem?` succeeds and fails. -/
   dGetElem!_def (c : cont) (i : idx) [Inhabited (elem i)] :
     c[i]ᵈ! = match c[i]ᵈ? with | some e => e | none => default := by
     intros
