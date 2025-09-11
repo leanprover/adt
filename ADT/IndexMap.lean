@@ -3,12 +3,22 @@ Copyright (c) 2025 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Yicheng Qian
 -/
-
 import Lean
-import ADT.IsomMap
+import ADT.BiMap
 import ADT.Array
 import ADT.MapLike
 import ADT.Tactics.StructFieldEqs
+
+/-!
+# Index map with offset
+
+This file defines a data structure which maintains a mapping from
+an interval of natural numbers to elements of some type `α`. The
+starting point of the interval is a fixed natural number `off` that
+remains constant under insertion. Each time a new element `x : α` is
+inserted, it will be associated with an index equal to `off` plus
+the current number of elements in the map.
+-/
 
 open Lean
 
@@ -40,7 +50,7 @@ instance : Membership α (IndexMap γ α) where
 def getIdx (m : IndexMap γ α) (x : α) (h : x ∈ m) : Nat :=
   m.map[x]
 
-instance : IsomMap α Nat (IndexMap γ α) where
+instance : BiMap α Nat (IndexMap γ α) where
   find₁ := getIdx?
   find₂ := getVal?
 
@@ -70,7 +80,7 @@ struct_field_eqs insertIfNewThenGetIdx #[Prod, IndexMap]
 struct_field_eqs insertIfNew #[Prod, IndexMap]
 struct_field_eqs insertIfNewMany #[Prod, IndexMap]
 
-def WF (m : IndexMap γ α) := WFIsomMap α Nat _ m
+def WF (m : IndexMap γ α) := WFBiMap α Nat _ m
 
 /-
 theorem size_eq_of_WF
@@ -240,7 +250,7 @@ theorem insertIfNewThenGetIdx_lt_of_WF {m : IndexMap γ α} {x : α} (hwf : WF m
 theorem empty_WF {off capacity} [LawfulMapLike γ α Nat] :
   (IndexMap.emptyWithCapacity (α:=α) (γ:=γ) off capacity).WF := by
   constructor <;> intro a b <;>
-    simp [IsomMap.find₁, IsomMap.find₂, getIdx?, getVal?_def, emptyWithCapacity, LawfulMapLike.getElem?_empty]
+    simp [BiMap.find₁, BiMap.find₂, getIdx?, getVal?_def, emptyWithCapacity, LawfulMapLike.getElem?_empty]
 
 open Classical in
 theorem insert_WF [LawfulMapLike γ α Nat] {m : IndexMap γ α} {x : α}
@@ -250,7 +260,7 @@ theorem insert_WF [LawfulMapLike γ α Nat] {m : IndexMap γ α} {x : α}
     simp only [mem_def] at notin
     simp only [insert, size]
     constructor <;> intro a b <;>
-      simp only [IsomMap.find₁, IsomMap.find₂, getVal?_def,
+      simp only [BiMap.find₁, BiMap.find₂, getVal?_def,
                  getIdx?, LawfulMapLike.getElem?_insert]
     case find₁_find₂ =>
       split
@@ -287,7 +297,7 @@ theorem insert_WF [LawfulMapLike γ α Nat] {m : IndexMap γ α} {x : α}
             intro ha; injection ha; contradiction
           case isFalse h =>
             intro hind; apply hwf.find₂_find₁
-            simp [IsomMap.find₂, getVal?_def, hb, hind]
+            simp [BiMap.find₂, getVal?_def, hb, hind]
       case isFalse hb => intro h; cases h
 
 theorem getIdxThenInsertIfNew?_fst_eq_getIdx? {m : IndexMap γ α} {x : α} :

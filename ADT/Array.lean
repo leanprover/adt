@@ -4,6 +4,10 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Yicheng Qian
 -/
 
+/-!
+# Additional lemmas for arrays
+-/
+
 theorem Array.push_ind {α : Type u} {motive : Array α → Prop}
   (base : motive #[]) (ind : ∀ (head : Array α) (tail : α), motive head → motive (head.push tail)) :
   ∀ (t : Array α), motive t := by

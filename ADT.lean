@@ -4,9 +4,10 @@ import ADT.Logic
 import ADT.Array
 import ADT.List
 import ADT.OptArr
-import ADT.Lemmas
+import ADT.MapLemmas
+import ADT.SetLemmas
 import ADT.IndexMap
-import ADT.IsomMap
+import ADT.BiMap
 import ADT.DFunctor
 import ADT.Size
 import ADT.Fold

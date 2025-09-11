@@ -3,11 +3,14 @@ Copyright (c) 2025 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Yicheng Qian
 -/
-
 import Lean
 import ADT.Size
 import ADT.Fold
 open Lean Std
+
+/-!
+# `ToList` and related `Lawful` classes
+-/
 
 class ToList (γ : Type u) (α : Type v) where
   toList : γ → List α

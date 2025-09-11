@@ -3,18 +3,21 @@ Copyright (c) 2025 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Yicheng Qian
 -/
-
 import Lean
 import ADT.List
 import ADT.OptArr
 import ADT.Logic
-import ADT.Lemmas
+import ADT.MapLemmas
 import ADT.Size
 import ADT.DGetElem
 import Std.Data
 open Std
 
 /-!
+# Abstract datatypes for maps and dependently typed maps
+-/
+
+/-
   This section defines an abstract datatype `DMapLike` and its lawful
   counterpart `LawfulDMapLike`. An instance `inst : DMapLike γ α β` denotes
   that `γ` models a finite, dependently typed map from `α` to `β`,
@@ -617,7 +620,7 @@ instance {α β} [Ord α] [LawfulEqOrd α] [TransOrd α] : LawfulDMapLike (ExtDT
 
 end DMapLike
 
-/-!
+/-
   This section defines an abstract datatype `MapLike` and its lawful
   counterpart `LawfulMapLike`. An instance `inst : MapLike γ α β` denotes
   that `γ` models a finite map from `α` to `β`, i.e. a function

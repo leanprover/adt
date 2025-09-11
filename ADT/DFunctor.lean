@@ -3,9 +3,14 @@ Copyright (c) 2025 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Yicheng Qian
 -/
-
 import Lean
 import Std.Data
+
+/-!
+# Dependently typed functor
+
+This file defines a dependently typed version of the `Functor` typeclass.
+-/
 
 open Lean Std
 

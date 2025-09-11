@@ -3,10 +3,16 @@ Copyright (c) 2025 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Yicheng Qian
 -/
-
 import Lean
 import Std.Data
 open Std
+
+/-!
+# Fold-related operations
+
+This file defines typeclasses for `Fold`-related operations and
+their `Lawful` typeclasses.
+-/
 
 class Foldl (γ : Type _) (α : Type _) where
   foldl {β} : (β → α → β) → β → γ → β

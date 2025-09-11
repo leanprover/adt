@@ -3,8 +3,15 @@ Copyright (c) 2025 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Yicheng Qian
 -/
-
 import Lean
+import Std.Data.DHashMap.Basic
+
+/-!
+# Equational theorems for functions that return structure instances
+
+This file develops a utility for generating equational
+theorems for functions that return structure instances
+-/
 
 open Lean Elab Meta Parser
 

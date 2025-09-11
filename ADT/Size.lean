@@ -6,9 +6,17 @@ Authors: Yicheng Qian
 
 import Lean
 import ADT.OptArr
-import ADT.Lemmas
+import ADT.MapLemmas
+import ADT.SetLemmas
 import Std.Data
 open Std
+
+/-!
+# The typeclass `Size`
+
+The typeclass `Size` for the operation `size`, and
+related `Lawful` typeclasses.
+-/
 
 class Size (γ : Type u) where
   size : γ → Nat

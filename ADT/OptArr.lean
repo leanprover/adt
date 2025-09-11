@@ -3,8 +3,19 @@ Copyright (c) 2025 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Yicheng Qian
 -/
-
 import ADT.Array
+
+/-!
+# Array of `Option`
+
+This file explores one way of interpreting an `Array (Option α)`:
+vieweing it as a map from natural numbers to elements of `α`.
+
+If the `k`-th entry of the array is `.none`, it means that
+the key `k` is not present in the map. If the `k`-th entry of the
+array is `.some v`, it means that the key `k` is present in the map
+and it corresponds to the value `v`.
+-/
 
 def OptArr (α : Type) := Array (Option α)
 

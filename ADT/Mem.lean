@@ -3,11 +3,14 @@ Copyright (c) 2025 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Yicheng Qian
 -/
-
 import Lean
 import Std.Data
 import ADT.Size
 open Std
+
+/-!
+# Typeclasses related to the membership operation
+-/
 
 class IsEmpty (γ : Type u) where
   isEmpty : γ → Bool

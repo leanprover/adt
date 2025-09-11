@@ -3,11 +3,17 @@ Copyright (c) 2025 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Yicheng Qian
 -/
-
 import ADT.MapLike
 import ADT.Mem
 import ADT.ListLike
 open Std
+
+/-!
+# API for maps and dependently typed maps
+
+The typeclasses defined in this file extends those
+defined in `MapLike` with useful operations.
+-/
 
 section DMapAPI
 

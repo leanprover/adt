@@ -4,6 +4,10 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Yicheng Qian
 -/
 
+/-!
+# Extra logical theorems
+-/
+
 theorem iff_exists_of_forall_iff {α} {p q : α → Prop} (h : ∀ x, p x ↔ q x) :
   (∃ x, p x) ↔ (∃ x, q x) := by simp [h]
 

@@ -3,17 +3,22 @@ Copyright (c) 2025 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Yicheng Qian
 -/
-
 import Lean
 import ADT.List
-import ADT.Lemmas
+import ADT.SetLemmas
 import ADT.Size
 import Std.Data
 open Std
 
--- Not using the typeclass `Insert` because the type
--- of `Insert.insert` does not match `Std.HashSet.insert`
--- and `Std.TreeSet.insert`
+/-!
+# Abstract datatypes for sets
+-/
+
+/-
+  **TODO:** Not using the typeclass `Insert` because the type
+  of `Insert.insert` does not match `Std.HashSet.insert`
+  and `Std.TreeSet.insert`
+-/
 class SetLike (γ : Type u) (α : Type v) extends
   Membership α γ, Size γ where
   insert : γ → α → γ

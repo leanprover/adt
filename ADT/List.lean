@@ -4,6 +4,10 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Yicheng Qian
 -/
 
+/-!
+# Additional theorems about lists
+-/
+
 open Classical in
 def List.SubPerm {α} (l₁ l₂ : List α) := ∀ ⦃a : α⦄, l₁.count a ≤ l₂.count a
 
