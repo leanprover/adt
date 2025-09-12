@@ -308,33 +308,33 @@ partial def mkElabStructFieldEqs
 where
   -- Returns `rhs` and the proof of `projFn body = rhs`
   go (pi : ProjFnInfo) : Expr → MetaM (Expr × Expr)
-  | .letE name type val body _ =>
-    withLetDecl name type val fun x => do
-      let (rhs, proof) ← go pi (body.instantiate1 x)
-      let rhs ← mkLetFVars #[x] rhs
-      let proof ← mkLetFVars #[x] proof
-      return (rhs, proof)
-  | .mdata data b => do
-    let (rhs, proof) ← go pi b
-    return (.mdata data rhs, proof)
-  | b@(.app _ _ ) => do
-    let appFn := b.getAppFn
-    let appArgs := b.getAppArgs
-    let .some appFnName := appFn.constName?
-      | return ← goFallBack pi b
-    if appFnName == pi.ctorName then
-      let some rhs := appArgs[pi.numParams + pi.fieldIdx]?
-        | throwError "{decl_name%} :: Cannot get the {pi.fieldIdx}-th field from (supposedly) structure instance {b}"
-      let rflExpr ← mkEqRefl (.app pi.val b)
-      return (rhs, rflExpr)
-    if pi.isDep then
+    | .letE name type val body _ =>
+      withLetDecl name type val fun x => do
+        let (rhs, proof) ← go pi (body.instantiate1 x)
+        let rhs ← mkLetFVars #[x] rhs
+        let proof ← mkLetFVars #[x] proof
+        return (rhs, proof)
+    | .mdata data b => do
+      let (rhs, proof) ← go pi b
+      return (.mdata data rhs, proof)
+    | b@(.app _ _ ) => do
+      let appFn := b.getAppFn
+      let appArgs := b.getAppArgs
+      let .some appFnName := appFn.constName?
+        | return ← goFallBack pi b
+      if appFnName == pi.ctorName then
+        let some rhs := appArgs[pi.numParams + pi.fieldIdx]?
+          | throwError "{decl_name%} :: Cannot get the {pi.fieldIdx}-th field from (supposedly) structure instance {b}"
+        let rflExpr ← mkEqRefl (.app pi.val b)
+        return (rhs, rflExpr)
+      if pi.isDep then
+        return ← goFallBack pi b
+      if appFnName == ``ite then
+        return ← goIteApp pi b
+      if let .some matcherApp ← matchMatcherApp? b then
+        return ← goMatcherApp pi matcherApp
       return ← goFallBack pi b
-    if appFnName == ``ite then
-      return ← goIteApp pi b
-    if let .some matcherApp ← matchMatcherApp? b then
-      return ← goMatcherApp pi matcherApp
-    return ← goFallBack pi b
-  | b => return ← goFallBack pi b
+    | b => return ← goFallBack pi b
   goFallBack (pi : ProjFnInfo) (e : Expr) : MetaM (Expr × Expr) := do
     let rhs := Expr.headBeta (mkApp pi.val e)
     return (rhs, ← mkEqRefl rhs)
