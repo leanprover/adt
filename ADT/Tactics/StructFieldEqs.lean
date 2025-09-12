@@ -20,7 +20,7 @@ namespace StructFieldEqs
 inductive NestedStructMode where
   | terminal
   | chain
-  deriving Inhabited
+deriving Inhabited
 
 instance : KVMap.Value NestedStructMode where
   toDataValue : NestedStructMode → DataValue
@@ -51,9 +51,8 @@ initialize registerTraceClass `struct_field_eqs.thmNames
 
 
 theorem ite_comm.{u, v}
-  {α : Sort u} {β : Sort v} {c : Prop} [Decidable c]
-  (a b : α) (f : α → β)
-  : f (if c then a else b) = if c then (f a) else (f b) := by
+    {α : Sort u} {β : Sort v} {c : Prop} [Decidable c]
+    (a b : α) (f : α → β) : f (if c then a else b) = if c then (f a) else (f b) := by
   cases Decidable.em c <;> simp [*]
 
 structure ProjFnInfo where
@@ -99,8 +98,7 @@ def isIdMatcher (e : Expr) : MetaM (Option Expr) := do
   motives. However, to do that, we would have to use `HEq`. Therefore,
   we're sticking to the non-dependent motive case.
 -/
-def mkIdThmForMatcher
-  (matcherName : Name) (us : Array Level) : MetaM (Expr × Expr) := do
+def mkIdThmForMatcher (matcherName : Name) (us : Array Level) : MetaM (Expr × Expr) := do
   let .some matcherInfo ← getMatcherInfo? matcherName
     | throwError "{decl_name%} :: {matcherName} is not a matcher"
   if let .some pos := matcherInfo.uElimPos? then
@@ -174,8 +172,7 @@ def mkIdThmForMatcher
   come up with convincing use cases for this, therefore
   we're sticking to the easier case
 -/
-def mkCommThmForMatcher
-  (matcherName : Name) (us : Array Level) (u : Level) : MetaM (Expr × Expr) := do
+def mkCommThmForMatcher (matcherName : Name) (us : Array Level) (u : Level) : MetaM (Expr × Expr) := do
   let .some matcherInfo ← getMatcherInfo? matcherName
     | throwError "{decl_name%} :: {matcherName} is not a matcher"
   if !(← isLevelDefEq u .zero) && matcherInfo.uElimPos?.isNone then
@@ -275,9 +272,9 @@ def mkProjFnInfo (structName : Name) (fieldIdx : Nat) (fieldName : Name) (valTyp
       some preceeding equation
 -/
 partial def mkElabStructFieldEqs
-  (namePrefix : Name) (structNames : Std.HashSet Name)
-  (lhsCore : Expr) (lhsValCore : Expr) (lhsEq : Expr)
-  (nestedStructMode : NestedStructMode) : MetaM (Array (Name × Expr × Expr)) := do
+    (namePrefix : Name) (structNames : Std.HashSet Name)
+    (lhsCore : Expr) (lhsValCore : Expr) (lhsEq : Expr)
+    (nestedStructMode : NestedStructMode) : MetaM (Array (Name × Expr × Expr)) := do
   let b ← whnf (← inferType lhsCore)
   let .const structName _ := b.getAppFn
     | return #[]
@@ -408,8 +405,8 @@ where
     return (rhs, proof)
 
 def mkElabStructFieldEqsStx
-  (declName : Name) (structNames : Std.HashSet Name) (modifiers : TSyntax ``Command.declModifiers) :
-  TermElabM (Array (TSyntax ``Command.declaration)) := do
+    (declName : Name) (structNames : Std.HashSet Name) (modifiers : TSyntax ``Command.declModifiers) :
+    TermElabM (Array (TSyntax ``Command.declaration)) := do
   let .some ci := (← getEnv).find? declName
     | throwError "{decl_name%} :: Cannot find declaration `{declName}`"
   let .some declBody := ci.value?
@@ -435,8 +432,8 @@ def mkElabStructFieldEqsStx
       `(Command.declaration| $(modifiers):declModifiers theorem $fieldEqDeclStx : $eqStx := $proofStx))
 
 def elabStructFieldEqsAux
-  (declName : Name) (modifiers : TSyntax ``Command.declModifiers)
-  (vars : Array Expr) (sc : Command.Scope) (structNames : Std.HashSet Name) : TermElabM Unit := do
+    (declName : Name) (modifiers : TSyntax ``Command.declModifiers)
+    (vars : Array Expr) (sc : Command.Scope) (structNames : Std.HashSet Name) : TermElabM Unit := do
   let stxs ← mkElabStructFieldEqsStx declName structNames modifiers
   let modifiersVal ← elabModifiers modifiers
   let views := stxs.map (fun stx => Command.mkDefViewOfTheorem modifiersVal stx.raw[1])
@@ -530,13 +527,13 @@ syntax (name := structFieldEqsStx) declModifiers "struct_field_eqs" ident "#[" w
     ```
 -/
 @[command_elab structFieldEqsStx] def elabStructFieldEqs : Command.CommandElab
-| `(command | $modifiers:declModifiers struct_field_eqs $declNameStx:ident #[ $elems,* ]) => do
-  let sc ← Command.getScope
-  let declName ← resolveGlobalConstNoOverload declNameStx
-  let structNames ← elems.getElems.mapM resolveGlobalConstNoOverload
-  let structNames := Std.HashSet.ofArray structNames
-  Command.runTermElabM fun xs =>
-    elabStructFieldEqsAux declName modifiers xs sc structNames
-| _ => throwUnsupportedSyntax
+  | `(command | $modifiers:declModifiers struct_field_eqs $declNameStx:ident #[ $elems,* ]) => do
+    let sc ← Command.getScope
+    let declName ← resolveGlobalConstNoOverload declNameStx
+    let structNames ← elems.getElems.mapM resolveGlobalConstNoOverload
+    let structNames := Std.HashSet.ofArray structNames
+    Command.runTermElabM fun xs =>
+      elabStructFieldEqsAux declName modifiers xs sc structNames
+  | _ => throwUnsupportedSyntax
 
 end StructFieldEqs

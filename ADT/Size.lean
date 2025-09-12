@@ -73,11 +73,11 @@ class LawfulMemSize (γ : Type u) (α : Type v) [Size γ] [Membership α γ] whe
   size_zero_iff_forall_not_mem : ∀ {m : γ}, Size.size m = 0 ↔ ∀ (x : α), ¬ x ∈ m
 
 theorem LawfulMemSize.size_ne_zero_iff_exists_mem {γ α} [Size γ] [Membership α γ] [LawfulMemSize γ α] {m : γ} :
-  Size.size m ≠ 0 ↔ ∃ (x : α), x ∈ m := by
+    Size.size m ≠ 0 ↔ ∃ (x : α), x ∈ m := by
   rw [ne_eq, size_zero_iff_forall_not_mem (α:=α)]; simp
 
 theorem LawfulMemSize.size_gt_zero_iff_exists_mem {γ α} [Size γ] [Membership α γ] [LawfulMemSize γ α] {m : γ} :
-  Size.size m > 0 ↔ ∃ (x : α), x ∈ m := by
+    Size.size m > 0 ↔ ∃ (x : α), x ∈ m := by
   rw [← size_ne_zero_iff_exists_mem, Nat.ne_zero_iff_zero_lt];
 
 instance {α} : LawfulMemSize (Option α) α where

@@ -48,12 +48,12 @@ class LawfulFoldlToList (γ : Type u) (α : Type v) [Foldl γ α] [ToList γ α]
 class LawfulFoldrToList (γ : Type u) (α : Type v) [Foldr γ α] [ToList γ α] where
   foldr_eq_foldr_toList {m : γ} {β} {f : α → β → β} {init : β} : Foldr.foldr f init m = (ToList.toList m).foldr f init
 
-class LawfulFoldlMToList (γ : Type u) (α : Type v) [FoldlM γ α] [ToList γ α]
-  extends LawfulFoldlM γ α where
+class LawfulFoldlMToList (γ : Type u) (α : Type v) [FoldlM γ α] [ToList γ α] extends
+    LawfulFoldlM γ α where
   foldlM_eq_foldlM_toList {m : γ} {β} {n} [Monad n] [LawfulMonad n] {f : β → α → n β} {init : β} : FoldlM.foldlM f init m = (ToList.toList m).foldlM f init
 
-class LawfulFoldrMToList (γ : Type u) (α : Type v) [FoldrM γ α] [ToList γ α]
-  extends LawfulFoldrM γ α where
+class LawfulFoldrMToList (γ : Type u) (α : Type v) [FoldrM γ α] [ToList γ α] extends
+    LawfulFoldrM γ α where
   foldrM_eq_foldrM_toList {m : γ} {β} {n} [Monad n] [LawfulMonad n] {f : α → β → n β} {init : β} : FoldrM.foldrM f init m = (ToList.toList m).foldrM f init
 
 instance {α} : LawfulSizeToList (List α) α where

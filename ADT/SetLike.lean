@@ -20,7 +20,7 @@ open Std
   and `Std.TreeSet.insert`
 -/
 class SetLike (γ : Type u) (α : Type v) extends
-  Membership α γ, Size γ where
+    Membership α γ, Size γ where
   insert : γ → α → γ
   erase  : γ → α → γ
 
@@ -36,20 +36,20 @@ theorem SetLike.equiv.symm {γ₁ γ₂ α} [SetLike γ₁ α] [SetLike γ₂ α
   conv => left; enter [x]; rw [Iff.comm]
 
 theorem SetLike.equiv.trans {γ₁ γ₂ γ₃ α} [inst₁ : SetLike γ₁ α] [inst₂ : SetLike γ₂ α] [inst₃ : SetLike γ₃ α]
-  {m₁ : γ₁} {m₂ : γ₂} {m₃ : γ₃} : equiv (α:=α) m₁ m₂ → equiv (α:=α) m₂ m₃ → equiv (α:=α) m₁ m₃ := by
+    {m₁ : γ₁} {m₂ : γ₂} {m₃ : γ₃} : equiv (α:=α) m₁ m₂ → equiv (α:=α) m₂ m₃ → equiv (α:=α) m₁ m₃ := by
   intro h₁ h₂ x
   rw [h₁, h₂]
 
 open SetLike
 
 class LawfulSetLike (γ : Type u) (α : Type v) [SetLike γ α] extends
-  LawfulMemSize γ α where
+    LawfulMemSize γ α where
   mem_insert : ∀ {m : γ} {x y : α}, y ∈ insert m x ↔ y ∈ m ∨ y = x
   mem_erase : ∀ {m : γ} {x y : α}, y ∈ erase m x ↔ y ∈ m ∧ y ≠ x
   size_erase_mem : ∀ {m : γ} {k : α}, k ∈ m → Size.size (erase m k) + 1 = Size.size m
 
 theorem LawfulSetLike.exists_toList {γ α} [inst : SetLike γ α] [LawfulSetLike γ α] {m : γ} :
-  ∃ (l : List α), l.length = Size.size m ∧ l.Nodup ∧ ∀ k, k ∈ m ↔ k ∈ l := by
+    ∃ (l : List α), l.length = Size.size m ∧ l.Nodup ∧ ∀ k, k ∈ m ↔ k ∈ l := by
   generalize hsz : Size.size m = n
   induction n generalizing m
   case zero =>
@@ -75,20 +75,20 @@ theorem LawfulSetLike.exists_toList {γ α} [inst : SetLike γ α] [LawfulSetLik
 noncomputable def LawfulSetLike.exKeyList {γ α} [SetLike γ α] [LawfulSetLike γ α] (m : γ) : List α :=
   (exists_toList (α:=α) (m:=m)).choose
 
-noncomputable def LawfulSetLike.length_exKeyList_eq_size {γ α} [SetLike γ α] [LawfulSetLike γ α] {m : γ} :
+theorem LawfulSetLike.length_exKeyList_eq_size {γ α} [SetLike γ α] [LawfulSetLike γ α] {m : γ} :
   (exKeyList (α:=α) m).length = Size.size m :=
   (Exists.choose_spec exists_toList).left
 
-noncomputable def LawfulSetLike.length_exKeyList_nodup {γ α} [SetLike γ α] [LawfulSetLike γ α] {m : γ} :
+theorem LawfulSetLike.length_exKeyList_nodup {γ α} [SetLike γ α] [LawfulSetLike γ α] {m : γ} :
   (exKeyList (α:=α) m).Nodup :=
   (Exists.choose_spec exists_toList).right.left
 
-noncomputable def LawfulSetLike.length_exKeyList_equiv {γ α} [SetLike γ α] [LawfulSetLike γ α] {m : γ} :
-  ∀ k, k ∈ m ↔ k ∈ (exKeyList (α:=α) m) :=
+theorem LawfulSetLike.length_exKeyList_equiv {γ α} [SetLike γ α] [LawfulSetLike γ α] {m : γ} :
+    ∀ k, k ∈ m ↔ k ∈ (exKeyList (α:=α) m) :=
   (Exists.choose_spec exists_toList).right.right
 
 theorem LawfulSetLike.size_eq_of_equiv {γ₁ γ₂ α} [SetLike γ₁ α] [SetLike γ₂ α]
-  [LawfulSetLike γ₁ α] [LawfulSetLike γ₂ α] {m₁ : γ₁} {m₂ : γ₂}
+    [LawfulSetLike γ₁ α] [LawfulSetLike γ₂ α] {m₁ : γ₁} {m₂ : γ₂}
   (hequiv : equiv (α:=α) m₁ m₂) : Size.size m₁ = Size.size m₂ := by
   let ⟨l₁, heq₁, hnd₁, hequiv₁⟩ := exists_toList (α:=α) (m:=m₁)
   let ⟨l₂, heq₂, hnd₂, hequiv₂⟩ := exists_toList (α:=α) (m:=m₂)
@@ -98,54 +98,54 @@ theorem LawfulSetLike.size_eq_of_equiv {γ₁ γ₂ α} [SetLike γ₁ α] [SetL
   intro x; rw [← hequiv₁, ← hequiv₂]; apply hequiv
 
 theorem LawfulSetLike.insert_mem_equiv {γ α} [SetLike γ α] [LawfulSetLike γ α]
-  {m : γ} {k : α} (hmem : k ∈ m) : equiv (α:=α) (insert (α:=α) m k) m := by
+    {m : γ} {k : α} (hmem : k ∈ m) : equiv (α:=α) (insert (α:=α) m k) m := by
   simp [equiv, mem_insert, hmem]
 
 theorem LawfulSetLike.erase_insert_not_mem_equiv {γ α} [SetLike γ α] [LawfulSetLike γ α]
-  {m : γ} {k : α} (hnmem : k ∉ m) : equiv (α:=α) (erase (insert m k) k) m := by
+    {m : γ} {k : α} (hnmem : k ∉ m) : equiv (α:=α) (erase (insert m k) k) m := by
   simp only [equiv, mem_erase, mem_insert]
   intro x; by_cases (x = k) <;> simp_all
 
 theorem LawfulSetLike.erase_not_mem_equiv {γ α} [SetLike γ α] [LawfulSetLike γ α]
-  {m : γ} {k : α} (hnmem : k ∉ m) : equiv (α:=α) (erase m k) m := by
+    {m : γ} {k : α} (hnmem : k ∉ m) : equiv (α:=α) (erase m k) m := by
   simp only [equiv, mem_erase]
   intro x; by_cases (x = k) <;> simp_all
 
 theorem LawfulSetLike.size_insert_mem {γ α} [SetLike γ α] [LawfulSetLike γ α] {m : γ}
-  {k : α} (hmem : k ∈ m) : Size.size (insert m k) = Size.size m := by
+    {k : α} (hmem : k ∈ m) : Size.size (insert m k) = Size.size m := by
   apply size_eq_of_equiv; apply insert_mem_equiv hmem
 
 theorem LawfulSetLike.size_insert_not_mem {γ α} [SetLike γ α] [LawfulSetLike γ α] {m : γ}
-  {k : α} (hnmem : k ∉ m) : Size.size (insert m k) = Size.size m + 1 := by
+    {k : α} (hnmem : k ∉ m) : Size.size (insert m k) = Size.size m + 1 := by
   have hke := erase_insert_not_mem_equiv hnmem
   rw [← size_eq_of_equiv hke]; symm
   apply size_erase_mem; simp [mem_insert]
 
 theorem LawfulSetLike.size_erase_not_mem {γ α} [SetLike γ α] [LawfulSetLike γ α] {m : γ}
-  {k : α} (hnm : k ∉ m) : Size.size (erase m k) = Size.size m := by
+    {k : α} (hnm : k ∉ m) : Size.size (erase m k) = Size.size m := by
   apply size_eq_of_equiv; apply erase_not_mem_equiv hnm
 
 set_option linter.unusedVariables false in
 theorem LawfulSetLike.mem_congr {γ₁ γ₂ α} [inst₁ : SetLike γ₁ α] [inst₂ : SetLike γ₂ α]
-  {m₁ : γ₁} {m₂ : γ₂} (hequiv : equiv (inst₁:=inst₁) m₁ m₂) (x : α) : x ∈ m₁ ↔ x ∈ m₂ :=
+    {m₁ : γ₁} {m₂ : γ₂} (hequiv : equiv (inst₁:=inst₁) m₁ m₂) (x : α) : x ∈ m₁ ↔ x ∈ m₂ :=
   hequiv _
 
 theorem LawfulSetLike.insert_congr {γ₁ γ₂ α} [inst₁ : SetLike γ₁ α] [inst₂ : SetLike γ₂ α]
-  [LawfulSetLike γ₁ α] [LawfulSetLike γ₂ α] {m₁ : γ₁} {m₂ : γ₂}
-  (hequiv : equiv (inst₁:=inst₁) m₁ m₂) (k : α) :
+    [LawfulSetLike γ₁ α] [LawfulSetLike γ₂ α] {m₁ : γ₁} {m₂ : γ₂}
+    (hequiv : equiv (inst₁:=inst₁) m₁ m₂) (k : α) :
   equiv (inst₁:=inst₁) (insert m₁ k) (insert m₂ k) := by
   intro x; simp only [LawfulSetLike.mem_insert]; rw [hequiv]
 
 open Classical in
 theorem LawfulSetLike.erase_congr {γ₁ γ₂ α} [inst₁ : SetLike γ₁ α] [inst₂ : SetLike γ₂ α]
-  [LawfulSetLike γ₁ α] [LawfulSetLike γ₂ α] {m₁ : γ₁} {m₂ : γ₂}
-  (hequiv : equiv (inst₁:=inst₁) m₁ m₂) (k : α) :
-  equiv (inst₁:=inst₁) (erase m₁ (self:=inst₁) k) (erase m₂ (self:=inst₂) k) := by
+    [LawfulSetLike γ₁ α] [LawfulSetLike γ₂ α] {m₁ : γ₁} {m₂ : γ₂}
+    (hequiv : equiv (inst₁:=inst₁) m₁ m₂) (k : α) :
+    equiv (inst₁:=inst₁) (erase m₁ (self:=inst₁) k) (erase m₂ (self:=inst₂) k) := by
   intro x; simp only [LawfulSetLike.mem_erase]; rw [hequiv]
 
 theorem LawfulSetLike.size_congr {γ₁ γ₂ α} [inst₁ : SetLike γ₁ α] [inst₂ : SetLike γ₂ α]
-  [LawfulSetLike γ₁ α] [LawfulSetLike γ₂ α] {m₁ : γ₁} {m₂ : γ₂}
-  (hequiv : equiv (inst₁:=inst₁) m₁ m₂) : Size.size m₁ = Size.size m₂ :=
+    [LawfulSetLike γ₁ α] [LawfulSetLike γ₂ α] {m₁ : γ₁} {m₂ : γ₂}
+    (hequiv : equiv (inst₁:=inst₁) m₁ m₂) : Size.size m₁ = Size.size m₂ :=
   LawfulSetLike.size_eq_of_equiv hequiv
 
 instance {α} [BEq α] [Hashable α] : SetLike (HashSet α) α where

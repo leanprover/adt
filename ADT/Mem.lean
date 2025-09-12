@@ -100,15 +100,15 @@ class LawfulIsEmptySize (γ) [IsEmpty γ] [Size γ] where
   isEmpty_iff_size_eq_zero {m : γ} : IsEmpty.isEmpty m ↔ Size.size m = 0
 
 theorem LawfulIsEmptySize.isEmpty_eq_size_beq_zero {γ} [IsEmpty γ] [Size γ] [LawfulIsEmptySize γ]
-  {m : γ} : IsEmpty.isEmpty m = (Size.size m == 0) := by
+    {m : γ} : IsEmpty.isEmpty m = (Size.size m == 0) := by
   rw [Bool.eq_iff_iff, isEmpty_iff_size_eq_zero]; simp
 
 theorem LawfulIsEmptySize.isEmpty_eq_false_iff_size_ne_zero {γ} [IsEmpty γ] [Size γ] [LawfulIsEmptySize γ]
-  {m : γ} : IsEmpty.isEmpty m = false ↔ Size.size m ≠ 0 := by
+    {m : γ} : IsEmpty.isEmpty m = false ↔ Size.size m ≠ 0 := by
   rw [Ne, ← isEmpty_iff_size_eq_zero]; simp
 
 theorem LawfulIsEmptySize.isEmpty_eq_false_iff_size_gt_zero {γ} [IsEmpty γ] [Size γ] [LawfulIsEmptySize γ]
-  {m : γ} : IsEmpty.isEmpty m = false ↔ Size.size m > 0 := by
+    {m : γ} : IsEmpty.isEmpty m = false ↔ Size.size m > 0 := by
   rw [isEmpty_eq_false_iff_size_ne_zero]; apply Nat.ne_zero_iff_zero_lt
 
 instance {α} : LawfulIsEmptySize (List α) where

@@ -36,7 +36,7 @@ theorem OptArr.lt_of_containsIdx {α} {a : OptArr α} {i : Nat} (h : a.containsI
   case some => apply (Array.getElem?_eq_some_iff.mp heq).choose
 
 theorem OptArr.isSome_array_getElem_of_containsIdx {α} {a : OptArr α} {i : Nat} (h : a.containsIdx i) :
-  (getElem (coll:=Array _) a i (a.lt_of_containsIdx h)).isSome := by
+    (getElem (coll:=Array _) a i (a.lt_of_containsIdx h)).isSome := by
   simp only [containsIdx, get?] at h
   rw [Array.getElem?_eq_getElem (a.lt_of_containsIdx h)] at h
   exact h
@@ -64,7 +64,7 @@ def OptArr.size {α} (a : OptArr α) : Nat := Array.countP (fun x => x.isSome) a
 def OptArr.isEmpty {α} (a : OptArr α) : Bool := a.size = 0
 
 theorem OptArr.mem_iff_isSome_array_getElem {α} {xs : OptArr α} {i : Nat} : i ∈ xs ↔
-  ∃ (h : i < Array.size xs), (getElem (coll:=Array _) xs i h).isSome := by
+    ∃ (h : i < Array.size xs), (getElem (coll:=Array _) xs i h).isSome := by
   apply Iff.intro <;> intro h
   case mp =>
     exists lt_of_containsIdx h
@@ -83,7 +83,7 @@ theorem OptArr.not_mem_empty {α} {i : Nat} : ¬ i ∈ (OptArr.emptyWithCapacity
   simp [Membership.mem, emptyWithCapacity, containsIdx, get?]
 
 theorem OptArr.getElem?_insert_self {α} {xs : OptArr α} {k : Nat} {v : α} :
-  (xs.insert k v)[k]? = some v := by
+    (xs.insert k v)[k]? = some v := by
   simp only [insert, getElem?]; simp only [get?]; split
   case isTrue hlt =>
     simp [Array.getElem?_modify, Array.getElem?_eq_getElem hlt]
@@ -93,7 +93,7 @@ theorem OptArr.getElem?_insert_self {α} {xs : OptArr α} {k : Nat} {v : α} :
     simp [Array.size_append, Array.size_replicate, hsz]
 
 theorem OptArr.getElem?_insert_ne {α} {xs : OptArr α} {k a : Nat} {v : α} (h : k ≠ a) :
-  (xs.insert k v)[a]? = xs[a]? := by
+    (xs.insert k v)[a]? = xs[a]? := by
   simp only [insert, getElem?]; simp only [get?]; split
   case isTrue hlt =>
     simp [Array.getElem?_modify, h]
@@ -110,13 +110,13 @@ theorem OptArr.getElem?_insert_ne {α} {xs : OptArr α} {k a : Nat} {v : α} (h 
       split <;> simp
 
 theorem OptArr.getElem?_erase_self {α} {xs : OptArr α} {k : Nat} :
-  (xs.erase k)[k]? = .none := by
+    (xs.erase k)[k]? = .none := by
   simp only [erase, getElem?]
   simp only [get?, Array.getElem?_modify, ite_true]
   cases (getElem? (coll:=Array _) xs k) <;> rfl
 
 theorem OptArr.getElem?_erase_ne {α} {xs : OptArr α} {k a : Nat} (hne : k ≠ a) :
-  (xs.erase k)[a]? = xs[a]? := by
+    (xs.erase k)[a]? = xs[a]? := by
   simp only [erase, getElem?]
   simp [get?, Array.getElem?_modify, hne]
 
@@ -137,7 +137,7 @@ theorem OptArr.size_zero_iff_forall_not_mem {α} {m : OptArr α} : size m = 0 �
     apply h i; exists ilt; simp [*]
 
 theorem OptArr.get?_eq_some_get {α} {a : OptArr α} {k : Nat} (h : k ∈ a) :
-  a[k]? = .some a[k] := by
+    a[k]? = .some a[k] := by
   have ⟨h, hget⟩ := mem_iff_isSome_array_getElem.mp h
   simp only [getElem?, getElem]
   simp [get?, get, Array.getElem?_eq_getElem h]

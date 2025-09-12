@@ -9,7 +9,7 @@ Authors: Yicheng Qian
 -/
 
 theorem iff_exists_of_forall_iff {α} {p q : α → Prop} (h : ∀ x, p x ↔ q x) :
-  (∃ x, p x) ↔ (∃ x, q x) := by simp [h]
+    (∃ x, p x) ↔ (∃ x, q x) := by simp [h]
 
 theorem iff_forall_of_forall_iff {α} {p q : α → Prop} (h : ∀ x, p x ↔ q x) :
-  (∀ x, p x) ↔ (∀ x, q x) := by simp [h]
+    (∀ x, p x) ↔ (∀ x, q x) := by simp [h]

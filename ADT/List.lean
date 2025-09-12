@@ -12,10 +12,10 @@ open Classical in
 def List.SubPerm {α} (l₁ l₂ : List α) := ∀ ⦃a : α⦄, l₁.count a ≤ l₂.count a
 
 theorem List.length_eq_of_perm {α} {l₁ l₂ : List α}
-  (hperm : l₁.Perm l₂) : l₁.length = l₂.length := by induction hperm <;> simp [*]
+    (hperm : l₁.Perm l₂) : l₁.length = l₂.length := by induction hperm <;> simp [*]
 
 theorem List.nodup_count_le_one {α} [BEq α] [LawfulBEq α] {l : List α} {x : α}
-  (hnd : l.Nodup) : l.count x ≤ 1 := by
+    (hnd : l.Nodup) : l.count x ≤ 1 := by
   induction l
   case nil => simp
   case cons head tail IH =>
@@ -30,13 +30,13 @@ theorem List.nodup_count_le_one {α} [BEq α] [LawfulBEq α] {l : List α} {x : 
       simp [*]
 
 theorem List.mem_nodup_iff_count_eq_one {α} [BEq α] [LawfulBEq α] {l : List α} {x : α}
-  (hnd : l.Nodup) : x ∈ l ↔ l.count x = 1 := by
+    (hnd : l.Nodup) : x ∈ l ↔ l.count x = 1 := by
   have hle := Nat.le_one_iff_eq_zero_or_eq_one.mp (nodup_count_le_one (x:=x) hnd)
   have hiff := List.count_eq_zero (a:=x) (l:=l)
   cases hle <;> simp_all
 
 theorem List.nodup_mem_eq_iff_count_eq {α} [BEq α] [LawfulBEq α] {l₁ l₂ : List α} {x : α}
-  (hnd₁ : l₁.Nodup) (hnd₂ : l₂.Nodup) : (x ∈ l₁ ↔ x ∈ l₂) ↔ (l₁.count x = l₂.count x) := by
+    (hnd₁ : l₁.Nodup) (hnd₂ : l₂.Nodup) : (x ∈ l₁ ↔ x ∈ l₂) ↔ (l₁.count x = l₂.count x) := by
   have h₁ := mem_nodup_iff_count_eq_one (x:=x) hnd₁
   have h₁' := List.count_eq_zero (l:=l₁) (a:=x)
   have h₂ := mem_nodup_iff_count_eq_one (x:=x) hnd₂
@@ -45,27 +45,27 @@ theorem List.nodup_mem_eq_iff_count_eq {α} [BEq α] [LawfulBEq α] {l₁ l₂ :
 
 open Classical in
 theorem List.nodup_subPerm_iff_subset {α} {l₁ l₂ : List α}
-  (hnd₁ : Nodup l₁) (hnd₂ : Nodup l₂) : l₁.SubPerm l₂ ↔ l₁ ⊆ l₂ := by
+    (hnd₁ : Nodup l₁) (hnd₂ : Nodup l₂) : l₁.SubPerm l₂ ↔ l₁ ⊆ l₂ := by
   simp only [SubPerm, List.subset_def,
              mem_nodup_iff_count_eq_one hnd₁, mem_nodup_iff_count_eq_one hnd₂]
   grind
 
 open Classical in
 theorem List.SubPerm_of_nodup_subset {α} {l₁ l₂ : List α}
-  (hnd : Nodup l₁) (hsub : l₁ ⊆ l₂) : l₁.SubPerm l₂ := by
+    (hnd : Nodup l₁) (hsub : l₁ ⊆ l₂) : l₁.SubPerm l₂ := by
   simp only [List.subset_def, mem_nodup_iff_count_eq_one hnd] at hsub
   grind [SubPerm, List.count_pos_iff]
 
 open Classical in
 theorem List.nodup_perm_iff_equiv {α} {l₁ l₂ : List α}
-  (hnd₁ : l₁.Nodup) (hnd₂ : l₂.Nodup) :
+    (hnd₁ : l₁.Nodup) (hnd₂ : l₂.Nodup) :
   l₁.Perm l₂ ↔ (∀ x, x ∈ l₁ ↔ x ∈ l₂) := by
   let instBEq : BEq α := BEq.mk (fun x y => decide (x = y))
   have : LawfulBEq α := { rfl := by simp, eq_of_beq := by simp }
   simp [perm_iff_count, nodup_mem_eq_iff_count_eq hnd₁ hnd₂]
 
 theorem List.mem_iff_exists_append {α} {l : List α} {x : α} :
-  x ∈ l ↔ ∃ (l₁ l₂ : List α), l = l₁ ++ (x :: l₂) := by
+    x ∈ l ↔ ∃ (l₁ l₂ : List α), l = l₁ ++ (x :: l₂) := by
   induction l
   case nil => simp
   case cons a as IH =>
@@ -86,7 +86,7 @@ theorem List.mem_iff_exists_append {α} {l : List α} {x : α} :
 
 open Classical in
 theorem List.subperm_iff {α} {l₁ l₂ : List α} :
-  l₁.SubPerm l₂ ↔ ∃ l₃, l₁.Sublist l₃ ∧ l₂.Perm l₃ := by
+    l₁.SubPerm l₂ ↔ ∃ l₃, l₁.Sublist l₃ ∧ l₂.Perm l₃ := by
   simp only [SubPerm]; apply Iff.intro
   case mp =>
     generalize h : l₁.length = n; induction n generalizing l₁ l₂
@@ -112,7 +112,7 @@ theorem List.subperm_iff {α} {l₁ l₂ : List α} :
   case mpr => grind
 
 theorem List.perm_iff_length_eq_andsubPerm {α} {l₁ l₂ : List α} :
-  l₁.Perm l₂ ↔ l₁.length = l₂.length ∧ l₁.SubPerm l₂ := by
+    l₁.Perm l₂ ↔ l₁.length = l₂.length ∧ l₁.SubPerm l₂ := by
   rw [List.subperm_iff]; apply Iff.intro
   case mp =>
     intro h; apply And.intro
@@ -126,13 +126,13 @@ theorem List.perm_iff_length_eq_andsubPerm {α} {l₁ l₂ : List α} :
     apply Perm.refl
 
 theorem List.length_le_of_subPerm {α} {l₁ l₂ : List α}
-  (hsub : l₁.SubPerm l₂) : l₁.length ≤ l₂.length := by
+    (hsub : l₁.SubPerm l₂) : l₁.length ≤ l₂.length := by
   have ⟨l, hsub, hperm⟩ := List.subperm_iff.mp hsub
   rw [length_eq_of_perm hperm]
   apply List.Sublist.length_le hsub
 
 open Classical in
 theorem List.length_le_of_subset {α} {l₁ l₂ : List α}
-  (hnd : l₁.Nodup) (hsub : l₁ ⊆ l₂) : l₁.length ≤ l₂.length := by
+    (hnd : l₁.Nodup) (hsub : l₁ ⊆ l₂) : l₁.length ≤ l₂.length := by
   apply length_le_of_subPerm
   apply SubPerm_of_nodup_subset hnd hsub
